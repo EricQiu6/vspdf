@@ -7,6 +7,8 @@ dist
 .vite
 out
 *.tsbuildinfo
+*.d.ts
+*.d.ts.map
 
 # Logs
 *.log

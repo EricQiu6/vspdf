@@ -47,18 +47,19 @@ function getSafeDirectories(): string[] {
  * Register a user-approved path (from file dialog or recent files)
  * This allows the app to access files the user explicitly opened.
  *
- * @param filePath - Path approved by user action
- * @param approveDirectory - If true, approve entire directory (use cautiously)
+ * @param filePath - Path approved by user action (file or directory)
+ * @param approveDirectory - If true, treat path as a directory and approve all contents (use cautiously)
  */
 export function approveUserPath(filePath: string, approveDirectory = false): void {
   const normalizedPath = path.normalize(path.resolve(filePath));
-  userApprovedPaths.add(normalizedPath);
 
-  // Only approve directory if explicitly requested (e.g., for workspace folders)
-  // By default, only the specific file is approved to prevent data leaks
   if (approveDirectory) {
-    const parentDir = path.dirname(normalizedPath);
-    userApprovedPaths.add(parentDir);
+    // Treat the path itself as a directory to approve
+    // This allows access to the directory and all its contents
+    userApprovedPaths.add(normalizedPath);
+  } else {
+    // Approve only the specific file or directory path
+    userApprovedPaths.add(normalizedPath);
   }
 }
 
@@ -67,6 +68,14 @@ export function approveUserPath(filePath: string, approveDirectory = false): voi
  */
 export function clearUserApprovedPaths(): void {
   userApprovedPaths.clear();
+}
+
+/**
+ * Clear cached safe directories (for testing only)
+ * @internal
+ */
+export function clearCachedSafeDirs(): void {
+  cachedSafeDirs = null;
 }
 
 /**
@@ -89,13 +98,18 @@ function isUserApprovedPath(resolvedPath: string): boolean {
   for (const approvedPath of userApprovedPaths) {
     const normalizedApproved = normalizeForComparison(approvedPath);
 
+    // Check for exact match first
+    if (normalizedPath === normalizedApproved) {
+      return true;
+    }
+
     // Ensure approved path ends with separator to prevent prefix attacks
     const approvedWithSep = normalizedApproved.endsWith(path.sep)
       ? normalizedApproved
       : normalizedApproved + path.sep;
 
-    // Check if path is the approved file or within approved directory
-    if (normalizedPath === normalizedApproved || normalizedPath.startsWith(approvedWithSep)) {
+    // Check if path is within approved directory
+    if (normalizedPath.startsWith(approvedWithSep)) {
       return true;
     }
   }
@@ -115,7 +129,8 @@ function isSafePath(resolvedPath: string): boolean {
       ? normalizedSafe
       : normalizedSafe + path.sep;
 
-    return normalizedPath.startsWith(safeWithSep);
+    // Check if path is exactly the safe directory or within it
+    return normalizedPath === normalizedSafe || normalizedPath.startsWith(safeWithSep);
   });
 }
 
@@ -149,8 +164,15 @@ export async function validatePath(filePath: string): Promise<string> {
   try {
     // Resolve symlinks to get real path
     resolvedPath = await realpath(normalizedPath);
-  } catch (_error) {
-    // If file doesn't exist yet (e.g., for write operations), validate parent directory
+  } catch (error) {
+    // Only handle ENOENT (file not found) - re-throw permission errors, I/O errors, etc.
+    // This prevents masking security-relevant errors like EACCES or symlink loops (ELOOP)
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== 'ENOENT') {
+      throw error;
+    }
+
+    // File doesn't exist yet (e.g., for write operations) - validate parent directory
     const parentDir = path.dirname(normalizedPath);
     const basename = path.basename(normalizedPath);
 
@@ -174,7 +196,13 @@ export async function validatePath(filePath: string): Promise<string> {
       if (err instanceof SecurityError) {
         throw err;
       }
-      throw new SecurityError(`Directory does not exist: ${parentDir}`);
+      // Only catch ENOENT on parent directory lookup
+      const parentErr = err as NodeJS.ErrnoException;
+      if (parentErr.code === 'ENOENT') {
+        throw new SecurityError(`Directory does not exist: ${parentDir}`);
+      }
+      // Re-throw permission errors, I/O errors, etc.
+      throw err;
     }
   }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { EventBus } from './EventBus';
+import { EventBus } from '../EventBus';
 import type { AppEvent } from '@vspdf/types';
 
 describe('EventBus', () => {
