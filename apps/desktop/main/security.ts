@@ -36,9 +36,9 @@ let cachedSafeDirs: string[] | null = null;
 function getSafeDirectories(): string[] {
   if (!cachedSafeDirs) {
     cachedSafeDirs = [
-      app.getPath('userData'),   // App data directory
-      app.getPath('temp'),       // Temp directory
-    ].map(dir => path.normalize(dir));
+      app.getPath('userData'), // App data directory
+      app.getPath('temp'), // Temp directory
+    ].map((dir) => path.normalize(dir));
   }
   return cachedSafeDirs;
 }
@@ -109,7 +109,7 @@ function isSafePath(resolvedPath: string): boolean {
   const safeDirs = getSafeDirectories();
   const normalizedPath = normalizeForComparison(resolvedPath);
 
-  return safeDirs.some(safeDir => {
+  return safeDirs.some((safeDir) => {
     const normalizedSafe = normalizeForComparison(safeDir);
     const safeWithSep = normalizedSafe.endsWith(path.sep)
       ? normalizedSafe
@@ -149,7 +149,7 @@ export async function validatePath(filePath: string): Promise<string> {
   try {
     // Resolve symlinks to get real path
     resolvedPath = await realpath(normalizedPath);
-  } catch (error) {
+  } catch (_error) {
     // If file doesn't exist yet (e.g., for write operations), validate parent directory
     const parentDir = path.dirname(normalizedPath);
     const basename = path.basename(normalizedPath);

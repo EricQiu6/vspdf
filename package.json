@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "pnpm --filter @vspdf/desktop dev",
     "build": "pnpm --filter @vspdf/desktop build",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "e2e": "playwright test",
     "lint": "eslint . --ext .ts,.tsx",
     "fmt": "prettier --write \"**/*.{ts,tsx,json,md}\"",

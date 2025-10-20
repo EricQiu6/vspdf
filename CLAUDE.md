@@ -1,7 +1,3 @@
-Here’s a concise **`CLAUDE.md`** you can drop at the repo root. It follows Anthropic’s guidance (keep it short, human-readable, auto-ingested; use it to brief Claude on goals, stack, workflows, and rules). ([Anthropic](https://www.anthropic.com/engineering/claude-code-best-practices "Claude Code Best Practices \\ Anthropic"))
-
----
-
 # Project Brief — VS Code-Style PDF Workspace
 
 **Goal.** A desktop research IDE with a VS Code-like workbench: multi-pane PDF reading, inline highlights, and a docked Comments panel. Threads are plain-text transcripts embedded in standard PDF annotations; AI replies appear as normal comments (`@assistant`).
@@ -26,7 +22,7 @@ Here’s a concise **`CLAUDE.md`** you can drop at the repo root. It follows Ant
 
 **How to help (you = Claude).**
 
-- Follow the **Tech Stack Spec** exactly; do not substitute libraries without an explicit request.
+- Follow the **Tech_Stack** exactly; do not substitute libraries without an explicit request.
 - When adding features, wire actions through **CommandRegistry** and UI context menus.
 - For comments: parse transcript → render (Markdown+KaTeX) → append new entries → write back to canonical annotation’s `Contents`.
 - Keep changes modular (Viewer vs Panel vs Services). Ask before modifying architecture.
@@ -50,5 +46,6 @@ Here’s a concise **`CLAUDE.md`** you can drop at the repo root. It follows Ant
 - Do **not** store HTML in transcripts; plain text only.
 - Respect Electron security: `contextIsolation: true`, no `nodeIntegration`; sanitize rendered HTML (DOMPurify).
 
----
-- use context7 to search up-to-date libraries and documentation
+**Additionals.**
+
+- use context7 to check for up-to-date documentation when making edits or code reviewing.
