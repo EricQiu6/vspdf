@@ -5,7 +5,7 @@ import {
   approveUserPath,
   clearUserApprovedPaths,
   clearCachedSafeDirs,
-  SecurityError
+  SecurityError,
 } from '../security';
 import * as fsPromises from 'fs/promises';
 import { app } from 'electron';
@@ -87,7 +87,7 @@ describe('validatePath', () => {
 
       // Do NOT approve the parent
       await expect(validatePath(filePath)).rejects.toThrow(SecurityError);
-      expect(await validatePath(filePath).catch(e => e.message)).toContain('not approved');
+      expect(await validatePath(filePath).catch((e) => e.message)).toContain('not approved');
     });
 
     it('should reject if parent directory does not exist (ENOENT on both)', async () => {
@@ -97,7 +97,7 @@ describe('validatePath', () => {
       mockRealpath.mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
 
       await expect(validatePath(filePath)).rejects.toThrow(SecurityError);
-      expect(await validatePath(filePath).catch(e => e.message)).toContain('does not exist');
+      expect(await validatePath(filePath).catch((e) => e.message)).toContain('does not exist');
     });
   });
 
@@ -131,7 +131,9 @@ describe('validatePath', () => {
   describe('Error handling - ELOOP (symlink loop)', () => {
     it('should throw ELOOP immediately for circular symlinks', async () => {
       const filePath = '/path/with/symlink/loop';
-      const eloopError = Object.assign(new Error('ELOOP: too many symbolic links'), { code: 'ELOOP' });
+      const eloopError = Object.assign(new Error('ELOOP: too many symbolic links'), {
+        code: 'ELOOP',
+      });
 
       mockRealpath.mockRejectedValueOnce(eloopError);
 
@@ -152,7 +154,9 @@ describe('validatePath', () => {
   describe('Error handling - ENOTDIR (not a directory)', () => {
     it('should throw ENOTDIR immediately', async () => {
       const filePath = '/file.txt/subpath';
-      const enotdirError = Object.assign(new Error('ENOTDIR: not a directory'), { code: 'ENOTDIR' });
+      const enotdirError = Object.assign(new Error('ENOTDIR: not a directory'), {
+        code: 'ENOTDIR',
+      });
 
       mockRealpath.mockRejectedValueOnce(enotdirError);
 
@@ -188,7 +192,7 @@ describe('validatePath', () => {
 
       mockRealpath.mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
 
-      const error = await validatePath(filePath).catch(e => e);
+      const error = await validatePath(filePath).catch((e) => e);
       expect(error).toBeInstanceOf(SecurityError);
       expect(error.message).toContain('does not exist');
     });
@@ -224,7 +228,7 @@ describe('validatePath', () => {
       mockRealpath.mockResolvedValue(unauthorizedPath);
       approveUserPath(approvedPath, true);
 
-      const error = await validatePath(unauthorizedPath).catch(e => e);
+      const error = await validatePath(unauthorizedPath).catch((e) => e);
       expect(error).toBeInstanceOf(SecurityError);
       expect(error.message).toContain('not approved');
     });

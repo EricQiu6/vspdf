@@ -9,11 +9,8 @@ Based on your full PRD, here is a **complete design document** written in the **
 A modular **workbench-style PDF IDE**, combining:
 
 - **VS Code layout** (multi-pane, multi-tab workspace)
-    
 - **Google-Doc-style commenting** (threaded annotations)
-    
 - **Copilot-style AI collaboration** (chat + inline AI replies)
-    
 
 Core architectural goal: _extendibility without rewrite_ — everything (PDF rendering, AI, annotations, persistence) mounts through stable service contracts.
 
@@ -53,11 +50,8 @@ App Shell (Electron/Web)
 **Responsibilities**
 
 - Initializes all services.
-    
 - Persists/loads workspace state (later).
-    
 - Routes commands, shortcuts, and context menus.
-    
 
 ---
 
@@ -66,11 +60,8 @@ App Shell (Electron/Web)
 **Purpose:** navigation and workspace awareness.
 
 - Lists open files + directory tree.
-    
 - Emits `openFile(uri)` commands.
-    
 - Context menu: _Open_, _Open to Side_, _Rename_, _Reveal in Finder_, _Add Folder_.
-    
 
 ---
 
@@ -79,11 +70,8 @@ App Shell (Electron/Web)
 **Purpose:** manage split panes and EditorGroups.
 
 - Maintains a **layout tree** (`row` / `column` / `leaf`).
-    
 - Splits, merges, resizes groups.
-    
 - Tracks active group and focus order.
-    
 
 ---
 
@@ -103,13 +91,9 @@ App Shell (Electron/Web)
 **Responsibilities**
 
 - Tab management (open/close/reorder).
-    
 - Renders active Viewer via ViewerRegistry.
-    
 - Relays Viewer events to EventBus.
-    
 - Displays toolbars/menus according to `capabilitiesChanged`.
-    
 
 ---
 
@@ -160,11 +144,8 @@ Dockable panels (bottom or right).
 Reserved IDs:
 
 - **outline**
-    
 - **comments**
-    
 - **ai-chat**
-    
 
 Panels subscribe to the EventBus and respond to selection or context changes.
 
@@ -175,16 +156,12 @@ Panels subscribe to the EventBus and respond to selection or context changes.
 **CommandRegistry**
 
 - Centralized definitions: `id`, `handler(ctx)`, `keybinding`, `predicate(ctx)`.
-    
 
 **ContextMenuService**
 
 - Detects `data-ui-role` target (`tab`, `editorGroup`, `sidebar.item[file]`, etc.).
-    
 - Builds a menu spec → executes commands via registry.
-    
 - Works in Electron (native menu) or web (HTML overlay).
-    
 
 Menus are context-aware (`when:` + `enabled:` predicates) and capability-driven (e.g., show Zoom only if `canZoom`).
 
@@ -192,17 +169,17 @@ Menus are context-aware (`when:` + `enabled:` predicates) and capability-driven 
 
 ## 3. Core Services
 
-|Service| Purpose                                                                                                       |
+| Service                | Purpose                                                                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
-|**EventBus**| Pub/sub between Viewers, Panels, and Workbench.                                                               |
-|**WorkspaceService**| Tracks root folder(s), open documents, recents.                                                               |
-|**AnnotationService**| Manages threaded comments with Markdown rendering. Supports Text/Rect/Hybrid anchors; persists via PDF embed. |
-|**PersistenceService**| (Deferred) Save/restore workspace layout and state snapshots.                                                 |
-|**IndexerService**| Builds local text + embedding index of all PDFs (policy-gated). Enables folder-wide AI context.               |
-|**AIBroker**| Mediates all model calls, enforces “cite-or-no-answer”.                                                       |
-|**PolicyService**| Security/enterprise flags: network access, background indexing, PII masking.                                  |
-|**FileSystemAdapter**| Abstracts FS I/O; supports local and cloud.                                                                   |
-|**Telemetry**| Opt-in structured logs.                                                                                       |
+| **EventBus**           | Pub/sub between Viewers, Panels, and Workbench.                                                               |
+| **WorkspaceService**   | Tracks root folder(s), open documents, recents.                                                               |
+| **AnnotationService**  | Manages threaded comments with Markdown rendering. Supports Text/Rect/Hybrid anchors; persists via PDF embed. |
+| **PersistenceService** | (Deferred) Save/restore workspace layout and state snapshots.                                                 |
+| **IndexerService**     | Builds local text + embedding index of all PDFs (policy-gated). Enables folder-wide AI context.               |
+| **AIBroker**           | Mediates all model calls, enforces “cite-or-no-answer”.                                                       |
+| **PolicyService**      | Security/enterprise flags: network access, background indexing, PII masking.                                  |
+| **FileSystemAdapter**  | Abstracts FS I/O; supports local and cloud.                                                                   |
+| **Telemetry**          | Opt-in structured logs.                                                                                       |
 
 ---
 
@@ -228,7 +205,7 @@ Menus are context-aware (`when:` + `enabled:` predicates) and capability-driven 
   "threadId": "uuid",
   "anchors": [
     { "type": "TextAnchor", "hash": "sha1", "start": 102, "end": 156 },
-    { "type": "RectAnchor", "page": 2, "bbox": [100,200,150,230] }
+    { "type": "RectAnchor", "page": 2, "bbox": [100, 200, 150, 230] }
   ],
   "comments": [
     { "id": "c1", "author": "user", "text": "markdown text", "created": "iso" },
@@ -244,30 +221,19 @@ Menus are context-aware (`when:` + `enabled:` predicates) and capability-driven 
 ### 5.1 Inline AI Comments
 
 - Trigger: user clicks “Ask AI” inside a comment.
-    
 - Context: current thread’s highlighted text.
-    
 - Output: AI reply saved as a new comment with `author = ai`.
-    
 - Guardrails: timeouts, minimal latency, optional on-device model.
-    
 
 ### 5.2 Copilot Chat Panel
 
 - Scope: folder-wide conversation.
-    
 - Context sources:
-    
-    - open tabs,
-        
-    - highlighted text,
-        
-    - pinned comments,
-        
-    - workspace index (via IndexerService).
-        
+  - open tabs,
+  - highlighted text,
+  - pinned comments,
+  - workspace index (via IndexerService).
 - Persistent history per workspace.
-    
 
 ---
 
@@ -276,110 +242,82 @@ Menus are context-aware (`when:` + `enabled:` predicates) and capability-driven 
 ### 6.1 Open File
 
 1. Sidebar → `openFile(uri, targetGroup)` → CommandRegistry.
-    
 2. EditorArea ensures group, creates tab.
-    
 3. ViewerRegistry resolves viewer.
-    
 4. Viewer mounts → emits `ready`.
-    
 
 ### 6.2 Selection → Comment
 
 1. Viewer emits `selectionChanged`.
-    
 2. Comments panel subscribes via EventBus.
-    
 3. AnnotationService creates thread and persists anchors.
-    
 
 ### 6.3 Selection → Ask AI
 
 1. Viewer emits `selectionChanged`.
-    
 2. AI panel enabled.
-    
 3. AIBroker composes context (selection + index hits).
-    
 4. Response → AI panel with citations.
-    
 
 ### 6.4 Persistence (future)
 
 - Workbench calls `collectSnapshot()`.
-    
 - All groups append each viewer’s `getState()`.
-    
 - PersistenceService writes JSON atomically.
-    
 
 ---
 
 ## 7. Extensibility Guarantees
 
 - **Viewer independence:** PDF, image, or text all work via the same API.
-    
 - **Panel independence:** outline/comments/chat panels subscribe via EventBus, not hard-wired.
-    
 - **Command extensibility:** menus/palette auto-discover commands.
-    
 - **Persistence optionality:** ready hooks; adding it later doesn’t alter component boundaries.
-    
 - **AI modularity:** AIBroker and Indexer are optional services behind policy flags.
-    
 
 ---
 
 ## 8. Security & Privacy
 
 - No external calls in MVP.
-    
 - PolicyService must gate all network + background jobs.
-    
 - AI features disabled by default until policy grants.
-    
 - Annotation and workspace files are plain text; redact before sharing.
-    
 
 ---
 
 ## 9. Performance Targets
 
-|Metric|Target|
-|---|---|
-|Tab switch latency|< 50 ms|
-|Viewer render FPS|≥ 60|
-|Memory per open PDF|≤ 150 MB|
-|Search latency|< 300 ms|
-|AI round-trip (local)|< 2 s|
+| Metric                | Target   |
+| --------------------- | -------- |
+| Tab switch latency    | < 50 ms  |
+| Viewer render FPS     | ≥ 60     |
+| Memory per open PDF   | ≤ 150 MB |
+| Search latency        | < 300 ms |
+| AI round-trip (local) | < 2 s    |
 
 ---
 
 ## 10. Future Hooks
 
 - **Annotation anchors → collaborative sync** (multi-user editing).
-    
 - **Workspace index → real-time embedding updates.**
-    
 - **AIBroker → multi-model routing (LLM-on-prem, cloud).**
-    
 - **Persistence → multi-workspace management.**
-    
 - **Cloud sync** via FileSystemAdapter extensions.
-    
 
 ---
 
 ## 11. Implementation Roadmap
 
-|Sprint|Deliverables|
-|---|---|
-|**S1**|Workbench shell + Sidebar + EditorArea + EditorGroups + StubViewer + Command/Context menu system|
-|**S2**|PersistenceService, real PDF.js Viewer integration|
-|**S3**|AnnotationService + threaded Markdown comments|
-|**S4**|Inline AI comment replies (AIBroker minimal)|
-|**S5**|Copilot chat panel + workspace Indexer|
-|**S6+**|Cloud sync, collaboration, multi-user commenting|
+| Sprint  | Deliverables                                                                                     |
+| ------- | ------------------------------------------------------------------------------------------------ |
+| **S1**  | Workbench shell + Sidebar + EditorArea + EditorGroups + StubViewer + Command/Context menu system |
+| **S2**  | PersistenceService, real PDF.js Viewer integration                                               |
+| **S3**  | AnnotationService + threaded Markdown comments                                                   |
+| **S4**  | Inline AI comment replies (AIBroker minimal)                                                     |
+| **S5**  | Copilot chat panel + workspace Indexer                                                           |
+| **S6+** | Cloud sync, collaboration, multi-user commenting                                                 |
 
 ---
 
@@ -388,12 +326,8 @@ Menus are context-aware (`when:` + `enabled:` predicates) and capability-driven 
 This design fully realizes the PRD’s vision:
 
 - VS Code layout: ✔ multi-pane, tabbed workbench.
-    
 - Threaded annotations: ✔ via AnnotationService + PanelContainer.
-    
 - AI collaboration: ✔ inline + copilot chat via AIBroker.
-    
 - Extensible core: ✔ every future feature (PDF, persistence, AI) plugs in through existing contracts.
-    
 
 The architecture is ready for immediate prototyping.

@@ -6,7 +6,5 @@
     "rootDir": "."
   },
   "include": ["**/*.ts"],
-  "references": [
-    { "path": "../types" }
-  ]
+  "references": [{ "path": "../types" }]
 }

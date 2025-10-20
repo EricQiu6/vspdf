@@ -7,8 +7,5 @@
     "types": ["vite/client"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "references": [
-    { "path": "../../../packages/types" },
-    { "path": "../../../packages/utils" }
-  ]
+  "references": [{ "path": "../../../packages/types" }, { "path": "../../../packages/utils" }]
 }

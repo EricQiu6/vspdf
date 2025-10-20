@@ -6,7 +6,5 @@
     "types": ["node"]
   },
   "include": ["**/*.ts"],
-  "references": [
-    { "path": "../../../packages/types" }
-  ]
+  "references": [{ "path": "../../../packages/types" }]
 }

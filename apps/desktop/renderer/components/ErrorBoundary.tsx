@@ -48,9 +48,7 @@ export class ErrorBoundary extends Component<Props, State> {
             Something went wrong
           </h1>
           <details style={{ whiteSpace: 'pre-wrap', maxWidth: '600px' }}>
-            <summary style={{ cursor: 'pointer', marginBottom: '0.5rem' }}>
-              Error details
-            </summary>
+            <summary style={{ cursor: 'pointer', marginBottom: '0.5rem' }}>Error details</summary>
             <code
               style={{
                 display: 'block',
