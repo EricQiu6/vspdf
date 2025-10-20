@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+.vite
+out
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+playwright-report
+
+# Electron
+release
+*.dmg
+*.exe
+*.zip

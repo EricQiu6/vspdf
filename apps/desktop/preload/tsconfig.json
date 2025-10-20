@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/preload",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"],
+  "references": [
+    { "path": "../../../packages/types" }
+  ]
+}

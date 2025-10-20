@@ -1,0 +1,135 @@
+// Window augmentation for Electron API
+declare global {
+  interface Window {
+    electronAPI: {
+      fs: {
+        read(filePath: string): Promise<Uint8Array>;
+        write(filePath: string, data: Uint8Array): Promise<void>;
+        listDir(
+          dirPath: string
+        ): Promise<Array<{ name: string; isDirectory: boolean; path: string }>>;
+        stat(filePath: string): Promise<{
+          size: number;
+          isDirectory: boolean;
+          isFile: boolean;
+          mtime: string;
+          ctime: string;
+        }>;
+      };
+    };
+  }
+}
+
+// Core domain types
+
+export type GroupId = string;
+export type ThreadId = string;
+export type AnnotId = string;
+
+export interface DocTab {
+  uri: string;
+  title: string;
+  viewer: 'stub' | 'pdf' | 'image' | 'text';
+}
+
+export interface EditorGroupState {
+  id: GroupId;
+  tabs: DocTab[];
+  activeIndex: number;
+}
+
+// Viewer types
+export interface ViewerProps {
+  uri: string;
+  initialState?: unknown;
+  onEvent: (ev: ViewerEvent) => void;
+}
+
+export interface ViewerHandle {
+  focus(): void;
+  getState(): unknown;
+  dispose(): void;
+  search?(q: string): void;
+  zoomIn?(): void;
+  zoomOut?(): void;
+  goToPage?(n: number): void;
+}
+
+export type ViewerEvent =
+  | { type: 'ready'; uri: string }
+  | { type: 'stateChanged'; uri: string; state: unknown }
+  | { type: 'capabilitiesChanged'; uri: string; capabilities: ViewerCapabilities }
+  | { type: 'selectionChanged'; uri: string; anchors: AnchorInput[] }
+  | { type: 'annotationClicked'; uri: string; annotId: AnnotId }
+  | { type: 'error'; uri: string; error: string };
+
+export interface ViewerCapabilities {
+  canZoom?: boolean;
+  canSearch?: boolean;
+  canGoToPage?: boolean;
+}
+
+// Anchor types
+export interface Quad {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  x3: number;
+  y3: number;
+  x4: number;
+  y4: number;
+}
+
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface AnchorInput {
+  page: number;
+  quads?: Quad[];
+  rect?: Rect;
+}
+
+// Thread and comment types
+export interface Comment {
+  id: string;
+  author: string;
+  time: string;
+  raw: string;
+}
+
+export interface ThreadViewModel {
+  docUri: string;
+  threadId: ThreadId;
+  comments: Comment[];
+  anchors: Array<{ annotId: AnnotId; page: number }>;
+}
+
+// Event bus types
+export type AppEvent =
+  | { type: 'viewer.ready'; uri: string }
+  | { type: 'viewer.selectionChanged'; uri: string; anchors: AnchorInput[] }
+  | { type: 'viewer.annotationClicked'; uri: string; annotId: AnnotId }
+  | { type: 'thread.updated'; uri: string; threadId: ThreadId };
+
+// Command types
+export interface CommandContext {
+  viewer?: ViewerHandle & { capabilities?: ViewerCapabilities };
+  selection?: AnchorInput[];
+  thread?: ThreadViewModel;
+  activeGroup?: GroupId;
+  activeTab?: DocTab;
+}
+
+export interface Command {
+  id: string;
+  handler: (ctx: CommandContext) => void | Promise<void>;
+  when?: (ctx: CommandContext) => boolean;
+  keybinding?: string;
+}
+
+export {};

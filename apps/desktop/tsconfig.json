@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "references": [
+    { "path": "./main" },
+    { "path": "./preload" },
+    { "path": "./renderer" }
+  ]
+}
