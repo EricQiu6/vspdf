@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFile, writeFile, readdir, stat } from 'fs/promises';
+import { validatePath, validateWritePath, SecurityError } from './security';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,39 +36,55 @@ async function createWindow() {
 // FileSystem IPC handlers
 ipcMain.handle('fs.read', async (_, filePath: string) => {
   try {
-    const data = await readFile(filePath);
+    const validatedPath = await validatePath(filePath);
+    const data = await readFile(validatedPath);
     return { success: true, data: Array.from(data) };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    return {
+      success: false,
+      error: (error as Error).message,
+      code: error instanceof SecurityError ? 'SECURITY_ERROR' : 'FS_ERROR',
+    };
   }
 });
 
 ipcMain.handle('fs.write', async (_, filePath: string, data: number[]) => {
   try {
-    await writeFile(filePath, new Uint8Array(data));
+    const validatedPath = await validateWritePath(filePath);
+    await writeFile(validatedPath, new Uint8Array(data));
     return { success: true };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    return {
+      success: false,
+      error: (error as Error).message,
+      code: error instanceof SecurityError ? 'SECURITY_ERROR' : 'FS_ERROR',
+    };
   }
 });
 
 ipcMain.handle('fs.listDir', async (_, dirPath: string) => {
   try {
-    const entries = await readdir(dirPath, { withFileTypes: true });
+    const validatedPath = await validatePath(dirPath);
+    const entries = await readdir(validatedPath, { withFileTypes: true });
     const result = entries.map((entry) => ({
       name: entry.name,
       isDirectory: entry.isDirectory(),
-      path: path.join(dirPath, entry.name),
+      path: path.join(validatedPath, entry.name),
     }));
     return { success: true, data: result };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    return {
+      success: false,
+      error: (error as Error).message,
+      code: error instanceof SecurityError ? 'SECURITY_ERROR' : 'FS_ERROR',
+    };
   }
 });
 
 ipcMain.handle('fs.stat', async (_, filePath: string) => {
   try {
-    const stats = await stat(filePath);
+    const validatedPath = await validatePath(filePath);
+    const stats = await stat(validatedPath);
     return {
       success: true,
       data: {
@@ -79,7 +96,11 @@ ipcMain.handle('fs.stat', async (_, filePath: string) => {
       },
     };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    return {
+      success: false,
+      error: (error as Error).message,
+      code: error instanceof SecurityError ? 'SECURITY_ERROR' : 'FS_ERROR',
+    };
   }
 });
 
