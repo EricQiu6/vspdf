@@ -330,7 +330,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       });
     });
 
-    it('does NOT close last tab in last group (prevents empty workspace)', () => {
+    it('closes last tab in only group, making group empty (VS Code behavior)', () => {
       const initial = createInitialEditorState();
       const groupId = Object.keys(initial.groups)[0];
 
@@ -341,15 +341,20 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
         tab: { uri: 'doc.pdf', title: 'Doc', viewer: 'pdf' },
       });
 
-      // Try to close it
+      // Close it
       const next = editorAreaReducer(state, {
         type: 'CLOSE_TAB',
         groupId,
         tabIndex: 0,
       });
 
-      // Should be unchanged (cannot have 0 groups)
-      expect(next).toBe(state);
+      // Group should still exist but be empty
+      expect(next.groups[groupId]).toBeDefined();
+      expect(next.groups[groupId].tabs).toEqual([]);
+      expect(next.groups[groupId].activeIndex).toBe(-1);
+
+      // Layout should be unchanged (still one leaf)
+      expect(next.layout).toEqual({ type: 'leaf', groupId });
     });
 
     it('returns unchanged state for invalid tab index', () => {
@@ -430,6 +435,30 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       expect(next.layout.type).toBe('split');
       if (next.layout.type === 'split') {
         expect(next.layout.direction).toBe('column');
+      }
+    });
+
+    it('splits empty group (VS Code behavior)', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Initial state already has empty group
+      expect(initial.groups[groupId].tabs).toEqual([]);
+
+      // Split it
+      const next = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId,
+        direction: 'row',
+      });
+
+      // Should create split with two empty groups
+      expect(next.layout.type).toBe('split');
+      expect(Object.keys(next.groups)).toHaveLength(2);
+
+      // Both groups should be empty
+      for (const id of Object.keys(next.groups)) {
+        expect(next.groups[id].tabs).toEqual([]);
       }
     });
 
@@ -751,6 +780,44 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       });
 
       expect(next).toBe(state);
+    });
+
+    it('sets new group active when moving first tab to empty group', () => {
+      const initial = createInitialEditorState();
+      const groupId1 = Object.keys(initial.groups)[0];
+
+      // Split and get second group
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: groupId1,
+        direction: 'row',
+      });
+
+      const groupIds = Object.keys(state.groups);
+      const groupId2 = groupIds.find((id) => id !== groupId1)!;
+
+      // Add tab to group1
+      state = editorAreaReducer(state, {
+        type: 'ADD_TAB',
+        groupId: groupId1,
+        tab: { uri: 'doc.pdf', title: 'Doc', viewer: 'pdf' },
+      });
+
+      // Verify group2 is empty with activeIndex -1
+      expect(state.groups[groupId2].tabs).toHaveLength(0);
+      expect(state.groups[groupId2].activeIndex).toBe(-1);
+
+      // Move tab to empty group2
+      state = editorAreaReducer(state, {
+        type: 'MOVE_TAB',
+        fromGroupId: groupId1,
+        toGroupId: groupId2,
+        tabIndex: 0,
+      });
+
+      // Group2 should now have activeIndex 0 (first tab becomes active)
+      expect(state.groups[groupId2].tabs).toHaveLength(1);
+      expect(state.groups[groupId2].activeIndex).toBe(0);
     });
   });
 

@@ -257,12 +257,30 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
         return state;
       }
 
-      // If closing last tab, close the group instead
+      // If closing last tab
       if (group.tabs.length === 1) {
-        return editorAreaReducer(state, {
-          type: 'CLOSE_GROUP',
-          groupId,
-        });
+        const groupIds = Object.keys(state.groups);
+
+        if (groupIds.length === 1) {
+          // Last tab in only group: make group empty (like VS Code)
+          return {
+            ...state,
+            groups: {
+              ...state.groups,
+              [groupId]: {
+                ...group,
+                tabs: [],
+                activeIndex: -1,
+              },
+            },
+          };
+        } else {
+          // Last tab in non-only group: close the group
+          return editorAreaReducer(state, {
+            type: 'CLOSE_GROUP',
+            groupId,
+          });
+        }
       }
 
       // Remove tab
