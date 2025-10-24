@@ -30,12 +30,7 @@ export interface DocTab {
   uri: string;
   title: string;
   viewer: 'stub' | 'pdf' | 'image' | 'text';
-}
-
-export interface EditorGroupState {
-  id: GroupId;
-  tabs: DocTab[];
-  activeIndex: number;
+  state?: unknown; // Optional viewer state (zoom, page, scroll position, etc.)
 }
 
 // Viewer types
@@ -131,5 +126,15 @@ export interface Command {
   when?: (ctx: CommandContext) => boolean;
   keybinding?: string;
 }
+
+// Editor layout and state types
+export type {
+  LayoutTree,
+  SplitNode,
+  LeafNode,
+  EditorAreaState,
+  EditorGroupState,
+  EditorAction,
+} from './editor';
 
 export {};
