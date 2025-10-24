@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  EditorAreaState,
-  EditorAction,
-  LayoutTree,
-  EditorGroupState,
-  DocTab,
-} from '@vspdf/types';
+import type { EditorAction, LayoutTree, DocTab } from '@vspdf/types';
 
 // Note: We're doing TDD - these imports don't exist yet!
 // We're defining the expected API through tests.
@@ -410,12 +404,16 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
         });
 
         // Second child should be new group
-        const newGroupId = (next.layout.children[1] as any).groupId;
-        expect(newGroupId).toBeTruthy();
-        expect(newGroupId).not.toBe(groupId1);
+        const secondChild = next.layout.children[1];
+        expect(secondChild.type).toBe('leaf');
+        if (secondChild.type === 'leaf') {
+          const newGroupId = secondChild.groupId;
+          expect(newGroupId).toBeTruthy();
+          expect(newGroupId).not.toBe(groupId1);
 
-        // New group should be empty
-        expect(next.groups[newGroupId].tabs).toEqual([]);
+          // New group should be empty
+          expect(next.groups[newGroupId].tabs).toEqual([]);
+        }
       }
     });
 
@@ -837,7 +835,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       });
 
       const groupIds = Object.keys(state.groups);
-      const groupId2 = groupIds.find((id) => id !== groupId)!;
+      const _groupId2 = groupIds.find((id) => id !== groupId)!;
 
       state = editorAreaReducer(state, {
         type: 'SPLIT_GROUP',
