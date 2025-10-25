@@ -28,6 +28,9 @@ export default [
         process: 'readonly',
         __dirname: 'readonly',
         NodeJS: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
       },
     },
     plugins: {
