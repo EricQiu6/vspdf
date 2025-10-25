@@ -123,6 +123,43 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
 
       expect(next).toBe(initial); // Same reference = no-op
     });
+
+    it('switches to existing tab when adding duplicate URI', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      const tab1: DocTabInput = { uri: 'doc.pdf', title: 'Doc', viewer: 'pdf' };
+      const tab2: DocTabInput = { uri: 'doc.pdf', title: 'Different Title', viewer: 'pdf' };
+
+      // Add first tab
+      let state = editorAreaReducer(initial, {
+        type: 'ADD_TAB',
+        groupId,
+        tab: tab1,
+      });
+
+      // Add another tab to make first one non-active
+      state = editorAreaReducer(state, {
+        type: 'ADD_TAB',
+        groupId,
+        tab: { uri: 'other.pdf', title: 'Other', viewer: 'pdf' },
+      });
+
+      // Now activeIndex is 0 (still on first tab)
+      expect(state.groups[groupId].activeIndex).toBe(0);
+
+      // Try to add duplicate of first tab (should switch to existing, not add)
+      state = editorAreaReducer(state, {
+        type: 'ADD_TAB',
+        groupId,
+        tab: tab2,
+      });
+
+      // Should NOT add new tab, should switch to existing
+      expect(state.groups[groupId].tabs).toHaveLength(2); // Not 3!
+      expect(state.groups[groupId].activeIndex).toBe(0); // Switched to existing tab
+      expect(state.groups[groupId].tabs[0].uri).toBe('doc.pdf');
+    });
   });
 
   // ============================================================================
@@ -416,6 +453,44 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       });
 
       expect(next).toBe(state);
+    });
+
+    it('closes last tab when it is active and clamps activeIndex', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Add 3 tabs
+      let state = initial;
+      for (let i = 0; i < 3; i++) {
+        state = editorAreaReducer(state, {
+          type: 'ADD_TAB',
+          groupId,
+          tab: { uri: `doc${i}.pdf`, title: `Doc ${i}`, viewer: 'pdf' },
+        });
+      }
+
+      // Set active to last tab (index 2)
+      state = editorAreaReducer(state, {
+        type: 'SET_ACTIVE_TAB',
+        groupId,
+        tabIndex: 2,
+      });
+
+      expect(state.groups[groupId].activeIndex).toBe(2);
+
+      // Close the last tab (which is active)
+      state = editorAreaReducer(state, {
+        type: 'CLOSE_TAB',
+        groupId,
+        tabIndex: 2,
+      });
+
+      // Should have 2 tabs remaining
+      expect(state.groups[groupId].tabs).toHaveLength(2);
+      // activeIndex should be clamped to max valid index (1)
+      expect(state.groups[groupId].activeIndex).toBe(1);
+      // The now-active tab should be what was previously doc1
+      expect(state.groups[groupId].tabs[1].uri).toBe('doc1.pdf');
     });
   });
 
