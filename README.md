@@ -1,10 +1,13 @@
 # VSPDF - VS Code-Style PDF Workspace
 
+[![CI](https://github.com/EricQiu6/vspdf/actions/workflows/ci.yml/badge.svg)](https://github.com/EricQiu6/vspdf/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Private-blue.svg)]()
+
 A desktop research IDE with a VS Code-like workbench: multi-pane PDF reading, inline highlights, and a docked Comments panel. Built with Electron, React, and TypeScript.
 
 ## Project Status
 
-**Architecture Initialized** - Foundation complete, ready for Sprint 1 development
+✅ **Architecture Initialized** - Foundation complete, ready for Sprint 1 development
 
 ## What's Been Created
 
