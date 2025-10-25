@@ -184,6 +184,45 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
 
       expect(next).toBe(initial);
     });
+
+    // Issue #36: Negative index validation
+    it('returns unchanged state for negative tabIndex', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      let state = editorAreaReducer(initial, {
+        type: 'ADD_TAB',
+        groupId,
+        tab: { uri: 'doc.pdf', title: 'Doc', viewer: 'pdf' },
+      });
+
+      const next = editorAreaReducer(state, {
+        type: 'SET_ACTIVE_TAB',
+        groupId,
+        tabIndex: -1,
+      });
+
+      expect(next).toBe(state); // Should be no-op
+    });
+
+    it('returns unchanged state for -Infinity tabIndex', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      let state = editorAreaReducer(initial, {
+        type: 'ADD_TAB',
+        groupId,
+        tab: { uri: 'doc.pdf', title: 'Doc', viewer: 'pdf' },
+      });
+
+      const next = editorAreaReducer(state, {
+        type: 'SET_ACTIVE_TAB',
+        groupId,
+        tabIndex: -Infinity,
+      });
+
+      expect(next).toBe(state); // Should be no-op
+    });
   });
 
   // ============================================================================
@@ -821,6 +860,201 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       // Group2 should now have activeIndex 0 (first tab becomes active)
       expect(state.groups[groupId2].tabs).toHaveLength(1);
       expect(state.groups[groupId2].activeIndex).toBe(0);
+    });
+
+    // Issue #34: State persistence tests
+    it('preserves tab state when moving between groups', () => {
+      const initial = createInitialEditorState();
+      const groupId1 = Object.keys(initial.groups)[0];
+
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: groupId1,
+        direction: 'row',
+      });
+
+      const groupIds = Object.keys(state.groups);
+      const groupId2 = groupIds.find((id) => id !== groupId1)!;
+
+      // Add tab with state
+      state = editorAreaReducer(state, {
+        type: 'ADD_TAB',
+        groupId: groupId1,
+        tab: {
+          uri: 'doc.pdf',
+          title: 'Doc',
+          viewer: 'pdf',
+          state: { page: 42, zoom: 1.5 },
+        },
+      });
+
+      // Move to other group
+      state = editorAreaReducer(state, {
+        type: 'MOVE_TAB',
+        fromGroupId: groupId1,
+        toGroupId: groupId2,
+        tabIndex: 0,
+      });
+
+      // State should be preserved
+      expect(state.groups[groupId2].tabs[0].state).toEqual({ page: 42, zoom: 1.5 });
+    });
+
+    it('preserves tab state when reordering within same group', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Add tabs with different states
+      const tabs: DocTabInput[] = [
+        { uri: 'doc1.pdf', title: 'Doc 1', viewer: 'pdf', state: { page: 1, zoom: 1.0 } },
+        { uri: 'doc2.pdf', title: 'Doc 2', viewer: 'pdf', state: { page: 5, zoom: 1.5 } },
+        { uri: 'doc3.pdf', title: 'Doc 3', viewer: 'pdf', state: { page: 10, zoom: 2.0 } },
+      ];
+
+      let state = initial;
+      for (const tab of tabs) {
+        state = editorAreaReducer(state, {
+          type: 'ADD_TAB',
+          groupId,
+          tab,
+        });
+      }
+
+      // Move tab with state from index 1 to index 0
+      state = editorAreaReducer(state, {
+        type: 'MOVE_TAB',
+        fromGroupId: groupId,
+        toGroupId: groupId,
+        tabIndex: 1,
+        toIndex: 0,
+      });
+
+      // State should be preserved and at new position
+      expect(state.groups[groupId].tabs[0].state).toEqual({ page: 5, zoom: 1.5 });
+      expect(state.groups[groupId].tabs[0].uri).toBe('doc2.pdf');
+    });
+
+    // Issue #35: Active tab movement tests
+    it('adjusts source group activeIndex when moving the active tab', () => {
+      const initial = createInitialEditorState();
+      const groupId1 = Object.keys(initial.groups)[0];
+
+      // Split to create two groups
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: groupId1,
+        direction: 'row',
+      });
+
+      const groupIds = Object.keys(state.groups);
+      const groupId2 = groupIds.find((id) => id !== groupId1)!;
+
+      // Add 3 tabs to group1
+      for (let i = 0; i < 3; i++) {
+        state = editorAreaReducer(state, {
+          type: 'ADD_TAB',
+          groupId: groupId1,
+          tab: { uri: `doc${i}.pdf`, title: `Doc ${i}`, viewer: 'pdf' },
+        });
+      }
+
+      // Set active to middle tab (index 1)
+      state = editorAreaReducer(state, {
+        type: 'SET_ACTIVE_TAB',
+        groupId: groupId1,
+        tabIndex: 1,
+      });
+
+      // Move the active tab to group2
+      state = editorAreaReducer(state, {
+        type: 'MOVE_TAB',
+        fromGroupId: groupId1,
+        toGroupId: groupId2,
+        tabIndex: 1,
+      });
+
+      // Source group should still have a valid activeIndex
+      expect(state.groups[groupId1].tabs).toHaveLength(2);
+      expect(state.groups[groupId1].activeIndex).toBe(1); // Points to what was doc2
+
+      // Target group should activate the moved tab
+      expect(state.groups[groupId2].tabs).toHaveLength(1);
+      expect(state.groups[groupId2].activeIndex).toBe(0);
+    });
+
+    // CRITICAL: Test activeIndex tracking when reordering active tab
+    it('updates activeIndex when reordering active tab within same group', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      const tabs: DocTabInput[] = [
+        { uri: 'doc1.pdf', title: 'A', viewer: 'pdf' },
+        { uri: 'doc2.pdf', title: 'B', viewer: 'pdf' },
+        { uri: 'doc3.pdf', title: 'C', viewer: 'pdf' },
+      ];
+
+      let state = initial;
+      for (const tab of tabs) {
+        state = editorAreaReducer(state, {
+          type: 'ADD_TAB',
+          groupId,
+          tab,
+        });
+      }
+
+      // Active is at index 0 (tab A)
+      expect(state.groups[groupId].activeIndex).toBe(0);
+
+      // Move active tab (A) from position 0 to position 2
+      state = editorAreaReducer(state, {
+        type: 'MOVE_TAB',
+        fromGroupId: groupId,
+        toGroupId: groupId,
+        tabIndex: 0,
+        toIndex: 2,
+      });
+
+      // Active tab A should still be active (now at index 2)
+      expect(state.groups[groupId].activeIndex).toBe(2);
+      expect(state.groups[groupId].tabs[2].uri).toBe('doc1.pdf');
+      expect(state.groups[groupId].tabs[0].uri).toBe('doc2.pdf');
+      expect(state.groups[groupId].tabs[1].uri).toBe('doc3.pdf');
+    });
+
+    it('updates activeIndex when moving non-active tab before active tab', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Add 3 tabs
+      let state = initial;
+      for (let i = 0; i < 3; i++) {
+        state = editorAreaReducer(state, {
+          type: 'ADD_TAB',
+          groupId,
+          tab: { uri: `doc${i}.pdf`, title: `Doc ${i}`, viewer: 'pdf' },
+        });
+      }
+
+      // Set active to index 2
+      state = editorAreaReducer(state, {
+        type: 'SET_ACTIVE_TAB',
+        groupId,
+        tabIndex: 2,
+      });
+
+      // Move tab from index 0 to index 1 (shifts active tab's position)
+      state = editorAreaReducer(state, {
+        type: 'MOVE_TAB',
+        fromGroupId: groupId,
+        toGroupId: groupId,
+        tabIndex: 0,
+        toIndex: 1,
+      });
+
+      // Active tab (originally at index 2) should still be active
+      // When moving a non-active tab, the active tab's index and data remain unchanged
+      expect(state.groups[groupId].tabs[2].uri).toBe('doc2.pdf');
+      expect(state.groups[groupId].activeIndex).toBe(2);
     });
   });
 

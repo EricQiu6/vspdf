@@ -439,11 +439,18 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
 
       if (fromGroupId === toGroupId) {
         // Moving within same group (reorder)
+        // Track which tab was active before reordering
+        const activeTab = fromGroup.tabs[fromGroup.activeIndex];
+
+        // Perform the reorder
         const newTabs = [...fromGroup.tabs];
         newTabs.splice(tabIndex, 1);
 
         const targetIndex = toIndex !== undefined ? toIndex : newTabs.length;
         newTabs.splice(targetIndex, 0, tab);
+
+        // Find the new index of the active tab after reordering
+        const newActiveIndex = newTabs.findIndex((t) => t.id === activeTab?.id);
 
         return {
           ...state,
@@ -452,6 +459,7 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
             [fromGroupId]: {
               ...fromGroup,
               tabs: newTabs,
+              activeIndex: newActiveIndex >= 0 ? newActiveIndex : fromGroup.activeIndex,
             },
           },
         };
