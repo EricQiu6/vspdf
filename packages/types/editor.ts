@@ -1,0 +1,63 @@
+// Editor layout and state types for the EditorArea workbench component
+
+import type { DocTab } from './index';
+
+/**
+ * Layout tree structure for split panes
+ * Discriminated union: either a split container or a leaf node
+ */
+export type LayoutTree = SplitNode | LeafNode;
+
+/**
+ * Split node: contains 2+ child nodes arranged in a direction
+ */
+export interface SplitNode {
+  type: 'split';
+  direction: 'row' | 'column';
+  sizes: number[]; // Proportional sizes (should sum to 1.0)
+  children: LayoutTree[];
+}
+
+/**
+ * Leaf node: references a single EditorGroup
+ */
+export interface LeafNode {
+  type: 'leaf';
+  groupId: string;
+}
+
+/**
+ * Complete EditorArea state
+ */
+export interface EditorAreaState {
+  layout: LayoutTree; // Tree structure of splits and groups
+  groups: Record<string, EditorGroupState>; // All group data indexed by ID
+  activeGroupId: string; // Currently focused group
+}
+
+/**
+ * State for a single editor group (pane)
+ */
+export interface EditorGroupState {
+  id: string;
+  tabs: DocTab[];
+  activeIndex: number; // -1 means no tabs
+}
+
+/**
+ * All possible actions for the EditorArea reducer
+ */
+export type EditorAction =
+  | { type: 'SPLIT_GROUP'; groupId: string; direction: 'row' | 'column' }
+  | { type: 'CLOSE_GROUP'; groupId: string }
+  | { type: 'ADD_TAB'; groupId: string; tab: DocTab }
+  | { type: 'CLOSE_TAB'; groupId: string; tabIndex: number }
+  | { type: 'SET_ACTIVE_TAB'; groupId: string; tabIndex: number }
+  | { type: 'SET_ACTIVE_GROUP'; groupId: string }
+  | {
+      type: 'MOVE_TAB';
+      fromGroupId: string;
+      toGroupId: string;
+      tabIndex: number;
+      toIndex?: number;
+    };

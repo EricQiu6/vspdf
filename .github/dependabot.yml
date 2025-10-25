@@ -1,0 +1,37 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Group all TypeScript-related updates
+      typescript:
+        patterns:
+          - "typescript"
+          - "@typescript-eslint/*"
+      # Group all Electron-related updates
+      electron:
+        patterns:
+          - "electron*"
+          - "vite-plugin-electron*"
+      # Group React updates
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+      # Group testing dependencies
+      testing:
+        patterns:
+          - "vitest"
+          - "playwright"
+          - "@playwright/*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
