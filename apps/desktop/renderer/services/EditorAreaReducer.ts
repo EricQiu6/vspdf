@@ -57,7 +57,9 @@ function replaceNodeAtPath(tree: LayoutTree, path: NodePath, newNode: LayoutTree
   const [index, ...rest] = path;
   return {
     ...tree,
-    children: tree.children.map((child, i) => (i === index ? replaceNodeAtPath(child, rest, newNode) : child)),
+    children: tree.children.map((child, i) =>
+      i === index ? replaceNodeAtPath(child, rest, newNode) : child
+    ),
   };
 }
 
