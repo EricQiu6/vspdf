@@ -3,10 +3,7 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { viewerRegistry } from '../../services/ViewerRegistry';
 import { StubViewer } from '../../viewers/StubViewer';
 import { EditorGroup } from './EditorGroup';
-import {
-  editorAreaReducer,
-  createInitialEditorState,
-} from '../../services/EditorAreaReducer';
+import { editorAreaReducer, createInitialEditorState } from '../../services/EditorAreaReducer';
 import type { EditorAreaState } from '@vspdf/types';
 import styles from './Workbench.module.css';
 
@@ -32,21 +29,77 @@ function createTestEditorState(): EditorAreaState {
 
   // Add many tabs to test horizontal scrolling behavior
   const testTabs = [
-    { uri: 'file:///docs/attention.pdf', title: 'Attention Is All You Need', viewer: 'stub' as const },
-    { uri: 'file:///docs/resnet.pdf', title: 'ResNet: Deep Residual Learning', viewer: 'stub' as const },
-    { uri: 'file:///docs/bert.pdf', title: 'BERT: Pre-training of Deep Bidirectional Transformers', viewer: 'stub' as const },
-    { uri: 'file:///docs/gpt3.pdf', title: 'GPT-3: Language Models are Few-Shot Learners', viewer: 'stub' as const },
+    {
+      uri: 'file:///docs/attention.pdf',
+      title: 'Attention Is All You Need',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/resnet.pdf',
+      title: 'ResNet: Deep Residual Learning',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/bert.pdf',
+      title: 'BERT: Pre-training of Deep Bidirectional Transformers',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/gpt3.pdf',
+      title: 'GPT-3: Language Models are Few-Shot Learners',
+      viewer: 'stub' as const,
+    },
     { uri: 'file:///docs/vit.pdf', title: 'Vision Transformer (ViT)', viewer: 'stub' as const },
-    { uri: 'file:///docs/clip.pdf', title: 'CLIP: Learning Transferable Visual Models', viewer: 'stub' as const },
-    { uri: 'file:///docs/diffusion.pdf', title: 'Denoising Diffusion Probabilistic Models', viewer: 'stub' as const },
-    { uri: 'file:///docs/llama.pdf', title: 'LLaMA: Open and Efficient Foundation Language Models', viewer: 'stub' as const },
-    { uri: 'file:///docs/stable-diffusion.pdf', title: 'High-Resolution Image Synthesis with Latent Diffusion Models', viewer: 'stub' as const },
-    { uri: 'file:///docs/alphafold.pdf', title: 'AlphaFold: Highly Accurate Protein Structure Prediction', viewer: 'stub' as const },
-    { uri: 'file:///docs/gan.pdf', title: 'Generative Adversarial Networks', viewer: 'stub' as const },
-    { uri: 'file:///docs/yolo.pdf', title: 'YOLO: Real-Time Object Detection', viewer: 'stub' as const },
-    { uri: 'file:///docs/efficientnet.pdf', title: 'EfficientNet: Rethinking Model Scaling', viewer: 'stub' as const },
-    { uri: 'file:///docs/t5.pdf', title: 'T5: Text-to-Text Transfer Transformer', viewer: 'stub' as const },
-    { uri: 'file:///docs/swin.pdf', title: 'Swin Transformer: Hierarchical Vision Transformer', viewer: 'stub' as const },
+    {
+      uri: 'file:///docs/clip.pdf',
+      title: 'CLIP: Learning Transferable Visual Models',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/diffusion.pdf',
+      title: 'Denoising Diffusion Probabilistic Models',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/llama.pdf',
+      title: 'LLaMA: Open and Efficient Foundation Language Models',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/stable-diffusion.pdf',
+      title: 'High-Resolution Image Synthesis with Latent Diffusion Models',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/alphafold.pdf',
+      title: 'AlphaFold: Highly Accurate Protein Structure Prediction',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/gan.pdf',
+      title: 'Generative Adversarial Networks',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/yolo.pdf',
+      title: 'YOLO: Real-Time Object Detection',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/efficientnet.pdf',
+      title: 'EfficientNet: Rethinking Model Scaling',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/t5.pdf',
+      title: 'T5: Text-to-Text Transfer Transformer',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/swin.pdf',
+      title: 'Swin Transformer: Hierarchical Vision Transformer',
+      viewer: 'stub' as const,
+    },
   ];
 
   // Build state by applying actions through reducer (pure, testable)
@@ -73,11 +126,7 @@ function createTestEditorState(): EditorAreaState {
 export function Workbench() {
   // Initialize reducer with test state using lazy initialization
   // The function runs exactly once per component instance (StrictMode-safe)
-  const [editorState, dispatch] = useReducer(
-    editorAreaReducer,
-    undefined,
-    createTestEditorState
-  );
+  const [editorState, dispatch] = useReducer(editorAreaReducer, undefined, createTestEditorState);
 
   const activeGroup = editorState.groups[editorState.activeGroupId];
 

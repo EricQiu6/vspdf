@@ -38,12 +38,7 @@ export function ViewerContainer({ tab, onEvent }: ViewerContainerProps) {
 
   return (
     <div className={styles.viewerContainer} role="tabpanel">
-      <ViewerComponent
-        ref={viewerRef}
-        uri={tab.uri}
-        initialState={tab.state}
-        onEvent={onEvent}
-      />
+      <ViewerComponent ref={viewerRef} uri={tab.uri} initialState={tab.state} onEvent={onEvent} />
     </div>
   );
 }

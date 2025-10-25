@@ -7,48 +7,56 @@
 ## Core Tenets
 
 ### 1. **Immutability First**
+
 - All state changes through reducers (pure functions)
 - No `useRef` for state (only DOM refs, performance optimization)
 - No mutations—spread operators, `Array.map/filter`, object spread
 - If you need mutable escape hatch, design is wrong
 
 ### 2. **Single Source of Truth**
+
 - Reducer = canonical state
 - No parallel state systems (refs, local vars, closures)
 - Derived state computed, not stored
 - UI renders from state, doesn't track state
 
 ### 3. **Type Safety as Architecture**
+
 - Input types ≠ domain types (e.g., `DocTabInput` vs `DocTab`)
 - Factory pattern: reducers add IDs, validate, transform
 - `unknown` over `any`, discriminated unions, exhaustive checks
 - Types document contracts, not just prevent errors
 
 ### 4. **Stable Contracts, Pluggable Implementations**
+
 - Interfaces frozen early (e.g., `ViewerHandle`, `ViewerProps`)
 - Registry pattern for extensibility (ViewerRegistry, CommandRegistry)
 - Dependency injection via props/parameters, not imports (except singletons)
 - StubViewer proves interface correct before real implementation
 
 ### 5. **Testability = Correctness**
+
 - Pure functions > classes with state
 - Factory functions for complex initialization
 - Test logic independently of UI (reducers testable without React)
 - If hard to test, refactor until easy
 
 ### 6. **Idempotency > Imperativity**
+
 - Operations safe to repeat (duplicate tab prevention)
 - StrictMode friend, not enemy
 - Effects declare dependencies honestly
 - "Run once" guard = code smell
 
 ### 7. **Explicit Over Magic**
+
 - No hidden coupling (import graphs, module side effects minimal)
 - Data flow visible (EventBus pub/sub over callbacks)
 - Module-level init for singletons, not effect-based
 - Comments explain _why_, code explains _what_
 
 ### 8. **Separation by Concern**
+
 ```
 UI Components   → Render, events, layout
 Services        → Business logic, stateless utilities
@@ -59,12 +67,14 @@ Types           → Contracts, domain boundaries
 No mixing. Components don't contain logic. Services don't render.
 
 ### 9. **Optimize for Deletion**
+
 - Features = additive, not invasive
 - Temp scaffolding clearly marked (e.g., `createTestEditorState`)
 - Decouple: removing feature shouldn't break others
 - Delete code > maintain dead code
 
 ### 10. **Composition > Inheritance**
+
 - Small, focused components
 - HOCs/hooks for cross-cutting concerns
 - Render props for inversion of control
@@ -74,16 +84,16 @@ No mixing. Components don't contain logic. Services don't render.
 
 ## Patterns in Use
 
-| Pattern | Where | Why |
-|---------|-------|-----|
-| **Reducer** | EditorAreaState | Predictable state, time-travel debug, testable |
-| **Registry** | ViewerRegistry | Pluggable viewers without recompile |
-| **Factory** | createTestEditorState | Pure initialization, reusable, testable |
-| **Singleton** | eventBus, viewerRegistry | Global coordination, module-level init |
-| **Input/Domain Split** | DocTabInput → DocTab | Validation boundary, ID generation |
-| **Lazy Init** | useReducer 3rd param | StrictMode-safe, runs once, optimized |
-| **Pub/Sub** | EventBus | Decouple components, extensible |
-| **Data Attributes** | `data-ui-role="tab"` | Context menus, testing, styling hooks |
+| Pattern                | Where                    | Why                                            |
+| ---------------------- | ------------------------ | ---------------------------------------------- |
+| **Reducer**            | EditorAreaState          | Predictable state, time-travel debug, testable |
+| **Registry**           | ViewerRegistry           | Pluggable viewers without recompile            |
+| **Factory**            | createTestEditorState    | Pure initialization, reusable, testable        |
+| **Singleton**          | eventBus, viewerRegistry | Global coordination, module-level init         |
+| **Input/Domain Split** | DocTabInput → DocTab     | Validation boundary, ID generation             |
+| **Lazy Init**          | useReducer 3rd param     | StrictMode-safe, runs once, optimized          |
+| **Pub/Sub**            | EventBus                 | Decouple components, extensible                |
+| **Data Attributes**    | `data-ui-role="tab"`     | Context menus, testing, styling hooks          |
 
 ---
 

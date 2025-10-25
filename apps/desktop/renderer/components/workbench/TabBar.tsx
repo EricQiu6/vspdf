@@ -79,12 +79,7 @@ export function TabBar({
   }
 
   return (
-    <div
-      ref={tabListRef}
-      className={styles.tabBar}
-      role="tablist"
-      onKeyDown={handleKeyDown}
-    >
+    <div ref={tabListRef} className={styles.tabBar} role="tablist" onKeyDown={handleKeyDown}>
       {tabs.map((tab, index) => (
         <Tab
           key={tab.id}
