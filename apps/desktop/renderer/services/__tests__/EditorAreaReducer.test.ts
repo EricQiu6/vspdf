@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { EditorAction, LayoutTree, DocTab } from '@vspdf/types';
+import type { EditorAction, LayoutTree, DocTabInput } from '@vspdf/types';
 
 // Note: We're doing TDD - these imports don't exist yet!
 // We're defining the expected API through tests.
@@ -47,7 +47,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       const initial = createInitialEditorState();
       const groupId = Object.keys(initial.groups)[0];
 
-      const tab: DocTab = {
+      const tab: DocTabInput = {
         uri: 'doc1.pdf',
         title: 'Document 1',
         viewer: 'pdf',
@@ -61,7 +61,10 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
 
       const next = editorAreaReducer(initial, action);
 
-      expect(next.groups[groupId].tabs).toEqual([tab]);
+      // Tab should be added with generated ID
+      expect(next.groups[groupId].tabs).toHaveLength(1);
+      expect(next.groups[groupId].tabs[0]).toMatchObject(tab);
+      expect(next.groups[groupId].tabs[0].id).toBeDefined();
       expect(next.groups[groupId].activeIndex).toBe(0);
     });
 
@@ -69,8 +72,8 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       const initial = createInitialEditorState();
       const groupId = Object.keys(initial.groups)[0];
 
-      const tab1: DocTab = { uri: 'doc1.pdf', title: 'Doc 1', viewer: 'pdf' };
-      const tab2: DocTab = { uri: 'doc2.pdf', title: 'Doc 2', viewer: 'pdf' };
+      const tab1: DocTabInput = { uri: 'doc1.pdf', title: 'Doc 1', viewer: 'pdf' };
+      const tab2: DocTabInput = { uri: 'doc2.pdf', title: 'Doc 2', viewer: 'pdf' };
 
       let state = editorAreaReducer(initial, {
         type: 'ADD_TAB',
@@ -85,7 +88,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       });
 
       expect(state.groups[groupId].tabs).toHaveLength(2);
-      expect(state.groups[groupId].tabs[1]).toEqual(tab2);
+      expect(state.groups[groupId].tabs[1]).toMatchObject(tab2);
       expect(state.groups[groupId].activeIndex).toBe(0); // Still on first tab
     });
 
@@ -93,7 +96,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       const initial = createInitialEditorState();
       const groupId = Object.keys(initial.groups)[0];
 
-      const tab: DocTab = {
+      const tab: DocTabInput = {
         uri: 'doc.pdf',
         title: 'Doc',
         viewer: 'pdf',
@@ -698,8 +701,8 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       const groupId2 = groupIds.find((id) => id !== groupId1)!;
 
       // Add tabs to group1
-      const tab1: DocTab = { uri: 'doc1.pdf', title: 'Doc 1', viewer: 'pdf' };
-      const tab2: DocTab = { uri: 'doc2.pdf', title: 'Doc 2', viewer: 'pdf' };
+      const tab1: DocTabInput = { uri: 'doc1.pdf', title: 'Doc 1', viewer: 'pdf' };
+      const tab2: DocTabInput = { uri: 'doc2.pdf', title: 'Doc 2', viewer: 'pdf' };
 
       state = editorAreaReducer(state, {
         type: 'ADD_TAB',
@@ -722,10 +725,10 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       });
 
       expect(state.groups[groupId1].tabs).toHaveLength(1);
-      expect(state.groups[groupId1].tabs[0]).toEqual(tab2);
+      expect(state.groups[groupId1].tabs[0]).toMatchObject(tab2);
 
       expect(state.groups[groupId2].tabs).toHaveLength(1);
-      expect(state.groups[groupId2].tabs[0]).toEqual(tab1);
+      expect(state.groups[groupId2].tabs[0]).toMatchObject(tab1);
     });
 
     it('moves tab within same group (reorder)', () => {
@@ -733,7 +736,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       const groupId = Object.keys(initial.groups)[0];
 
       // Add 3 tabs
-      const tabs: DocTab[] = [
+      const tabs: DocTabInput[] = [
         { uri: 'doc1.pdf', title: 'Doc 1', viewer: 'pdf' },
         { uri: 'doc2.pdf', title: 'Doc 2', viewer: 'pdf' },
         { uri: 'doc3.pdf', title: 'Doc 3', viewer: 'pdf' },
@@ -757,9 +760,9 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
         toIndex: 2,
       });
 
-      expect(state.groups[groupId].tabs[0]).toEqual(tabs[1]);
-      expect(state.groups[groupId].tabs[1]).toEqual(tabs[2]);
-      expect(state.groups[groupId].tabs[2]).toEqual(tabs[0]);
+      expect(state.groups[groupId].tabs[0]).toMatchObject(tabs[1]);
+      expect(state.groups[groupId].tabs[1]).toMatchObject(tabs[2]);
+      expect(state.groups[groupId].tabs[2]).toMatchObject(tabs[0]);
     });
 
     it('returns unchanged state for invalid indices', () => {

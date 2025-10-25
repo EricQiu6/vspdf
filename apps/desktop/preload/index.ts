@@ -1,4 +1,6 @@
-import { contextBridge, ipcRenderer } from 'electron';
+// Use require for preload script (runs in Node context)
+// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
+const { contextBridge, ipcRenderer } = require('electron');
 
 // FileSystem API
 const fsAPI = {
