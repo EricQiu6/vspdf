@@ -48,9 +48,8 @@ Electron (Renderer) — React App
 
 ## 2) Layout & Navigation
 
-- **Pane Splitter:** **`@devbookhq/splitter`** (nested row/column splits).  
-   API: `<Splitter direction="horizontal|vertical"> <Splitter.Panel/> … </Splitter>`
-- **Tabs:** Custom React tabs (simple reducer) or **`@radix-ui/tabs`**.
+- **Pane Splitter:** **`@devbookhq/splitter`** (nested row/column splits).API: `<Splitter direction="horizontal|vertical"> <Splitter.Panel/> … </Splitter>`
+- **Tabs:** Custom React tabs (simple reducer).
 - **Explorer Tree:** **`react-arborist`** (virtualized tree; file drag/drop).
 - **Routing:** App‑internal; no URL router needed.
 
@@ -171,9 +170,7 @@ function parseTranscript(txt: string): Comment[] {
 
 ## 6) Import / Export
 
-- **Primary:** **Annotated PDF** (incremental write).  
-   Canonical `Contents` holds the full thread; linked anchors hold `[thread-link <id>]`.
-- **Optional:** **XFDF sidecar** (mirror of `Contents`) for large docs/version control.
+- **Primary:** **Annotated PDF** (incremental write).Canonical `Contents` holds the full thread; linked anchors hold `[thread-link <id>]`.
 - **Round‑trip:** On open, list annotations → parse `Contents` → rebuild threads + anchors.
 
 **AnnotationService API**
@@ -271,7 +268,7 @@ packages/
 - **electron** `^31`, **vite** `^5`, **react** `^18`, **typescript** `^5`
 - **pdfjs-dist** `^4`
 - **pdfAnnotate** (git dependency to highkite/pdfAnnotate commit SHA)
-- **@devbookhq/splitter**, **react-arborist**, **@radix-ui/tabs**
+- **@devbookhq/splitter**, **react-arborist**
 - **remark**, **remark-gfm**, **remark-math**, **rehype-katex**, **katex`, **dompurify\*\*
 - **vitest**, **@playwright/test**, **eslint**, **prettier**
 
