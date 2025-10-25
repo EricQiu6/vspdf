@@ -445,6 +445,12 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
         const targetIndex = toIndex !== undefined ? toIndex : newTabs.length;
         newTabs.splice(targetIndex, 0, tab);
 
+        // Track which tab was active before reordering
+        const activeTab = fromGroup.tabs[fromGroup.activeIndex];
+
+        // Find the new index of the active tab after reordering
+        const newActiveIndex = newTabs.findIndex((t) => t.id === activeTab?.id);
+
         return {
           ...state,
           groups: {
@@ -452,6 +458,7 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
             [fromGroupId]: {
               ...fromGroup,
               tabs: newTabs,
+              activeIndex: newActiveIndex >= 0 ? newActiveIndex : fromGroup.activeIndex,
             },
           },
         };
