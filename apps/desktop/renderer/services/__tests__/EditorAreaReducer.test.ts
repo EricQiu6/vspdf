@@ -1052,7 +1052,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       });
 
       // Active tab (originally at index 2) should still be active
-      // but its data moved, not its index position in this case
+      // When moving a non-active tab, the active tab's index and data remain unchanged
       expect(state.groups[groupId].tabs[2].uri).toBe('doc2.pdf');
       expect(state.groups[groupId].activeIndex).toBe(2);
     });
