@@ -17,6 +17,9 @@ export default defineConfig({
         vite: {
           build: {
             outDir: path.resolve(__dirname, '../../dist/main'),
+            rollupOptions: {
+              external: ['electron'],
+            },
           },
         },
       },
@@ -30,6 +33,7 @@ export default defineConfig({
           build: {
             outDir: path.resolve(__dirname, '../../dist/preload'),
             rollupOptions: {
+              external: ['electron'],
               output: {
                 format: 'cjs',
                 entryFileNames: 'index.cjs',

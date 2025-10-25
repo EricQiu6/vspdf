@@ -187,7 +187,30 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
       }
 
       const group = state.groups[groupId];
-      const newTabs = [...group.tabs, tab];
+
+      // Check if tab with this URI already exists in this group
+      const existingIndex = group.tabs.findIndex((t) => t.uri === tab.uri);
+      if (existingIndex >= 0) {
+        // Switch to existing tab instead of adding duplicate
+        return {
+          ...state,
+          groups: {
+            ...state.groups,
+            [groupId]: {
+              ...group,
+              activeIndex: existingIndex,
+            },
+          },
+        };
+      }
+
+      // Generate unique ID for new tab
+      const newTab = {
+        ...tab,
+        id: generateGroupId(), // Reuse UUID generator
+      };
+
+      const newTabs = [...group.tabs, newTab];
       const newActiveIndex = group.activeIndex === -1 ? 0 : group.activeIndex;
 
       return {
