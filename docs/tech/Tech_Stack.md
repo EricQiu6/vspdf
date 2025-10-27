@@ -48,7 +48,7 @@ Electron (Renderer) — React App
 
 ## 2) Layout & Navigation
 
-- **Pane Splitter:** **`@devbookhq/splitter`** (nested row/column splits).API: `<Splitter direction="horizontal|vertical"> <Splitter.Panel/> … </Splitter>`
+- **Pane Splitter:** **`allotment`** (derived from VS Code's actual split view library; nested row/column splits). Originally planned `@devbookhq/splitter`, but switched for 100% VS Code fidelity and better maintenance (active as of June 2025 vs Aug 2023). API: `<Allotment vertical={boolean}> <Allotment.Pane/> … </Allotment>`
 - **Tabs:** Custom React tabs (simple reducer).
 - **Explorer Tree:** **`react-arborist`** (virtualized tree; file drag/drop).
 - **Routing:** App‑internal; no URL router needed.

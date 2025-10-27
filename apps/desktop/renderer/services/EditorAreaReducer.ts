@@ -353,12 +353,13 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
         activeIndex: -1,
       };
 
-      // Create split node
+      // Create split node with unique ID
       const originalLeaf: LeafNode = { type: 'leaf', groupId };
       const newLeaf: LeafNode = { type: 'leaf', groupId: newGroupId };
 
       const splitNode: SplitNode = {
         type: 'split',
+        id: generateGroupId(), // Generate unique ID for stable React keys
         direction,
         sizes: [0.5, 0.5],
         children: [originalLeaf, newLeaf],

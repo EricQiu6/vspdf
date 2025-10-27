@@ -1,0 +1,21 @@
+.errorState {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #f48771;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+}
+
+.errorState p {
+  margin: 0.5rem 0;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}

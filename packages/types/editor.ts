@@ -13,6 +13,7 @@ export type LayoutTree = SplitNode | LeafNode;
  */
 export interface SplitNode {
   type: 'split';
+  id: string; // Unique identifier for stable React keys
   direction: 'row' | 'column';
   sizes: number[]; // Proportional sizes (should sum to 1.0)
   children: LayoutTree[];

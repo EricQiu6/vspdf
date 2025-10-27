@@ -793,6 +793,69 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
 
       expect(next).toBe(initial);
     });
+
+    // Regression test for split panel display bug (Issue #15)
+    // When closing parent split group first, remaining panels must maintain correct orientation
+    it('closing parent split group correctly simplifies layout orientation', () => {
+      const initial = createInitialEditorState();
+      const g1 = Object.keys(initial.groups)[0];
+
+      // Create horizontal split: split(row, [leaf(g1), leaf(g2)])
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: g1,
+        direction: 'row',
+      });
+
+      const [g2] = Object.keys(state.groups).filter((id) => id !== g1);
+
+      // Create vertical split on right side:
+      // split(row, [leaf(g1), split(column, [leaf(g2), leaf(g3)])])
+      state = editorAreaReducer(state, {
+        type: 'SPLIT_GROUP',
+        groupId: g2,
+        direction: 'column',
+      });
+
+      const allGroups = Object.keys(state.groups);
+      const g3 = allGroups.find((id) => id !== g1 && id !== g2)!;
+
+      // Verify initial structure
+      expect(state.layout.type).toBe('split');
+      if (state.layout.type === 'split') {
+        expect(state.layout.direction).toBe('row');
+        expect(state.layout.children).toHaveLength(2);
+        expect(state.layout.children[0].type).toBe('leaf');
+        expect(state.layout.children[1].type).toBe('split');
+      }
+
+      // Close left group (g1) - the "parent" split group
+      // Expected simplification: split(column, [leaf(g2), leaf(g3)])
+      state = editorAreaReducer(state, {
+        type: 'CLOSE_GROUP',
+        groupId: g1,
+      });
+
+      // CRITICAL: Layout should simplify to vertical split (not horizontal!)
+      // This is the key assertion that would have caught the rendering bug
+      expect(state.layout.type).toBe('split');
+      if (state.layout.type === 'split') {
+        expect(state.layout.direction).toBe('column'); // ← CRITICAL: must be vertical
+        expect(state.layout.children).toHaveLength(2);
+        expect(state.layout.children[0].type).toBe('leaf');
+        expect(state.layout.children[1].type).toBe('leaf');
+        if (state.layout.children[0].type === 'leaf' && state.layout.children[1].type === 'leaf') {
+          expect(state.layout.children[0].groupId).toBe(g2);
+          expect(state.layout.children[1].groupId).toBe(g3);
+        }
+      }
+
+      // Only two groups should remain
+      expect(Object.keys(state.groups)).toHaveLength(2);
+      expect(state.groups[g1]).toBeUndefined();
+      expect(state.groups[g2]).toBeDefined();
+      expect(state.groups[g3]).toBeDefined();
+    });
   });
 
   // ============================================================================
@@ -1306,6 +1369,96 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       };
 
       expect(validateTree(state.layout)).toBe(true);
+    });
+
+    it('all split nodes have unique IDs', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Create complex nested structure
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId,
+        direction: 'row',
+      });
+
+      const groupIds = Object.keys(state.groups);
+      const groupId2 = groupIds.find((id) => id !== groupId)!;
+
+      state = editorAreaReducer(state, {
+        type: 'SPLIT_GROUP',
+        groupId: groupId2,
+        direction: 'column',
+      });
+
+      // Collect all split node IDs
+      const collectSplitIds = (tree: LayoutTree): string[] => {
+        if (tree.type === 'leaf') return [];
+        return [tree.id, ...tree.children.flatMap(collectSplitIds)];
+      };
+
+      const splitIds = collectSplitIds(state.layout);
+
+      // All IDs should be unique
+      const uniqueIds = new Set(splitIds);
+      expect(uniqueIds.size).toBe(splitIds.length);
+
+      // All IDs should be truthy (non-empty strings)
+      expect(splitIds.every((id) => id && id.length > 0)).toBe(true);
+    });
+
+    it('split node IDs remain stable across unrelated actions', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Create split
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId,
+        direction: 'row',
+      });
+
+      // Capture the split node ID
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') {
+        throw new Error('Expected split node');
+      }
+      const originalSplitId = splitNode.id;
+
+      // Perform unrelated action (add tab)
+      state = editorAreaReducer(state, {
+        type: 'ADD_TAB',
+        groupId,
+        tab: { uri: 'doc.pdf', title: 'Doc', viewer: 'pdf' },
+      });
+
+      // Split node ID should remain unchanged
+      const updatedSplitNode = state.layout;
+      if (updatedSplitNode.type !== 'split') {
+        throw new Error('Expected split node');
+      }
+      expect(updatedSplitNode.id).toBe(originalSplitId);
+    });
+
+    it('split node IDs are RFC 4122 UUIDs', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId,
+        direction: 'row',
+      });
+
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') {
+        throw new Error('Expected split node');
+      }
+
+      // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+      // where y is one of [8, 9, a, b]
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(splitNode.id).toMatch(uuidRegex);
     });
   });
 });
