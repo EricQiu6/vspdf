@@ -19,130 +19,90 @@ viewerRegistry.register('stub', StubViewer);
 // ============================================================================
 
 /**
- * Creates initial state with test tabs and 2-group split for development
- * This is temporary scaffolding - will be removed when real file opening is implemented
+ * Creates initial state with complex nested splits for development
+ * Layout: Vertical split, then horizontal split on right, then horizontal on top-right
+ *
+ * Structure:
+ *   row [
+ *     left group,
+ *     column [
+ *       row [
+ *         top-right-left,
+ *         top-right-right
+ *       ],
+ *       bottom-right
+ *     ]
+ *   ]
  */
 function createTwoGroupTestState(): EditorAreaState {
   // Start with empty state
   let state = createInitialEditorState();
-  const firstGroupId = state.activeGroupId;
+  const leftGroupId = state.activeGroupId;
 
-  // Add many tabs to test horizontal scrolling behavior (first group)
-  const testTabs = [
-    {
-      uri: 'file:///docs/attention.pdf',
-      title: 'Attention Is All You Need',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/resnet.pdf',
-      title: 'ResNet: Deep Residual Learning',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/bert.pdf',
-      title: 'BERT: Pre-training of Deep Bidirectional Transformers',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/gpt3.pdf',
-      title: 'GPT-3: Language Models are Few-Shot Learners',
-      viewer: 'stub' as const,
-    },
-    { uri: 'file:///docs/vit.pdf', title: 'Vision Transformer (ViT)', viewer: 'stub' as const },
-    {
-      uri: 'file:///docs/clip.pdf',
-      title: 'CLIP: Learning Transferable Visual Models',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/diffusion.pdf',
-      title: 'Denoising Diffusion Probabilistic Models',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/llama.pdf',
-      title: 'LLaMA: Open and Efficient Foundation Language Models',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/stable-diffusion.pdf',
-      title: 'High-Resolution Image Synthesis with Latent Diffusion Models',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/alphafold.pdf',
-      title: 'AlphaFold: Highly Accurate Protein Structure Prediction',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/gan.pdf',
-      title: 'Generative Adversarial Networks',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/yolo.pdf',
-      title: 'YOLO: Real-Time Object Detection',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/efficientnet.pdf',
-      title: 'EfficientNet: Rethinking Model Scaling',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/t5.pdf',
-      title: 'T5: Text-to-Text Transfer Transformer',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/swin.pdf',
-      title: 'Swin Transformer: Hierarchical Vision Transformer',
-      viewer: 'stub' as const,
-    },
+  // Add tabs to left group
+  const leftTabs = [
+    { uri: 'file:///docs/attention.pdf', title: 'Attention Is All You Need', viewer: 'stub' as const },
+    { uri: 'file:///docs/resnet.pdf', title: 'ResNet', viewer: 'stub' as const },
+    { uri: 'file:///docs/bert.pdf', title: 'BERT', viewer: 'stub' as const },
   ];
 
-  // Build state by applying actions through reducer (pure, testable)
-  // Add tabs to first group
-  testTabs.forEach((tab) => {
-    state = editorAreaReducer(state, {
-      type: 'ADD_TAB',
-      groupId: firstGroupId,
-      tab,
-    });
+  leftTabs.forEach((tab) => {
+    state = editorAreaReducer(state, { type: 'ADD_TAB', groupId: leftGroupId, tab });
   });
 
-  // Create second group via split (horizontal)
+  // Step 1: Vertical split (creates left | right)
   state = editorAreaReducer(state, {
     type: 'SPLIT_GROUP',
-    groupId: firstGroupId,
-    direction: 'row',
+    groupId: leftGroupId,
+    direction: 'row', // Vertical divider = row direction
   });
 
-  // Get the ID of the newly created group
-  const groupIds = Object.keys(state.groups);
-  const secondGroupId = groupIds.find((id) => id !== firstGroupId)!;
+  const rightGroupId = Object.keys(state.groups).find((id) => id !== leftGroupId)!;
 
-  // Add a few tabs to the second group
-  const secondGroupTabs = [
-    {
-      uri: 'file:///docs/gpt3.pdf',
-      title: 'GPT-3: Language Models are Few-Shot Learners',
-      viewer: 'stub' as const,
-    },
-    {
-      uri: 'file:///docs/llama.pdf',
-      title: 'LLaMA: Open and Efficient Foundation Language Models',
-      viewer: 'stub' as const,
-    },
-  ];
+  // Add tabs to right group
+  state = editorAreaReducer(state, {
+    type: 'ADD_TAB',
+    groupId: rightGroupId,
+    tab: { uri: 'file:///docs/gpt3.pdf', title: 'GPT-3', viewer: 'stub' as const },
+  });
 
-  secondGroupTabs.forEach((tab) => {
-    state = editorAreaReducer(state, {
-      type: 'ADD_TAB',
-      groupId: secondGroupId,
-      tab,
-    });
+  // Step 2: Horizontal split on right (creates top-right / bottom-right)
+  state = editorAreaReducer(state, {
+    type: 'SPLIT_GROUP',
+    groupId: rightGroupId,
+    direction: 'column', // Horizontal divider = column direction
+  });
+
+  // Find the newly created bottom-right group
+  const allGroupIds = Object.keys(state.groups);
+  const bottomRightGroupId = allGroupIds.find((id) => id !== leftGroupId && id !== rightGroupId)!;
+  const topRightGroupId = rightGroupId; // Original right became top-right
+
+  // Add tabs to bottom-right
+  state = editorAreaReducer(state, {
+    type: 'ADD_TAB',
+    groupId: bottomRightGroupId,
+    tab: { uri: 'file:///docs/llama.pdf', title: 'LLaMA', viewer: 'stub' as const },
+  });
+
+  // Step 3: Horizontal split on top-right (creates top-right-left | top-right-right)
+  state = editorAreaReducer(state, {
+    type: 'SPLIT_GROUP',
+    groupId: topRightGroupId,
+    direction: 'row', // Vertical divider = row direction
+  });
+
+  // Find the newly created top-right-right group
+  const finalGroupIds = Object.keys(state.groups);
+  const topRightRightGroupId = finalGroupIds.find(
+    (id) => id !== leftGroupId && id !== bottomRightGroupId && id !== topRightGroupId
+  )!;
+
+  // Add tabs to top-right-right
+  state = editorAreaReducer(state, {
+    type: 'ADD_TAB',
+    groupId: topRightRightGroupId,
+    tab: { uri: 'file:///docs/vit.pdf', title: 'Vision Transformer', viewer: 'stub' as const },
   });
 
   return state;

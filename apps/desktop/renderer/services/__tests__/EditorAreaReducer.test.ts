@@ -793,6 +793,72 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
 
       expect(next).toBe(initial);
     });
+
+    // Regression test for split panel display bug (Issue #15)
+    // When closing parent split group first, remaining panels must maintain correct orientation
+    it('closing parent split group correctly simplifies layout orientation', () => {
+      const initial = createInitialEditorState();
+      const g1 = Object.keys(initial.groups)[0];
+
+      // Create horizontal split: split(row, [leaf(g1), leaf(g2)])
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: g1,
+        direction: 'row',
+      });
+
+      const [g2] = Object.keys(state.groups).filter((id) => id !== g1);
+
+      // Create vertical split on right side:
+      // split(row, [leaf(g1), split(column, [leaf(g2), leaf(g3)])])
+      state = editorAreaReducer(state, {
+        type: 'SPLIT_GROUP',
+        groupId: g2,
+        direction: 'column',
+      });
+
+      const allGroups = Object.keys(state.groups);
+      const g3 = allGroups.find((id) => id !== g1 && id !== g2)!;
+
+      // Verify initial structure
+      expect(state.layout.type).toBe('split');
+      if (state.layout.type === 'split') {
+        expect(state.layout.direction).toBe('row');
+        expect(state.layout.children).toHaveLength(2);
+        expect(state.layout.children[0].type).toBe('leaf');
+        expect(state.layout.children[1].type).toBe('split');
+      }
+
+      // Close left group (g1) - the "parent" split group
+      // Expected simplification: split(column, [leaf(g2), leaf(g3)])
+      state = editorAreaReducer(state, {
+        type: 'CLOSE_GROUP',
+        groupId: g1,
+      });
+
+      // CRITICAL: Layout should simplify to vertical split (not horizontal!)
+      // This is the key assertion that would have caught the rendering bug
+      expect(state.layout.type).toBe('split');
+      if (state.layout.type === 'split') {
+        expect(state.layout.direction).toBe('column'); // ← CRITICAL: must be vertical
+        expect(state.layout.children).toHaveLength(2);
+        expect(state.layout.children[0].type).toBe('leaf');
+        expect(state.layout.children[1].type).toBe('leaf');
+        if (
+          state.layout.children[0].type === 'leaf' &&
+          state.layout.children[1].type === 'leaf'
+        ) {
+          expect(state.layout.children[0].groupId).toBe(g2);
+          expect(state.layout.children[1].groupId).toBe(g3);
+        }
+      }
+
+      // Only two groups should remain
+      expect(Object.keys(state.groups)).toHaveLength(2);
+      expect(state.groups[g1]).toBeUndefined();
+      expect(state.groups[g2]).toBeDefined();
+      expect(state.groups[g3]).toBeDefined();
+    });
   });
 
   // ============================================================================
