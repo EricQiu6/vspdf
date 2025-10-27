@@ -7,13 +7,6 @@
   color: var(--text-primary);
 }
 
-.editorAreaTest {
-  flex: 1;
-  display: flex;
-  padding: 1rem;
-  overflow: hidden;
-}
-
 .content {
   flex: 1;
   display: flex;

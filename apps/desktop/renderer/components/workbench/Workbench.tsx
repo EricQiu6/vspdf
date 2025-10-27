@@ -1,8 +1,8 @@
-import React, { useReducer } from 'react';
+import React from 'react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { viewerRegistry } from '../../services/ViewerRegistry';
 import { StubViewer } from '../../viewers/StubViewer';
-import { EditorGroup } from './EditorGroup';
+import { EditorArea } from './EditorArea';
 import { editorAreaReducer, createInitialEditorState } from '../../services/EditorAreaReducer';
 import type { EditorAreaState } from '@vspdf/types';
 import styles from './Workbench.module.css';
@@ -19,15 +19,15 @@ viewerRegistry.register('stub', StubViewer);
 // ============================================================================
 
 /**
- * Creates initial state with test tabs for development
- * This is temporary scaffolding - will be removed when EditorArea is implemented
+ * Creates initial state with test tabs and 2-group split for development
+ * This is temporary scaffolding - will be removed when real file opening is implemented
  */
-function createTestEditorState(): EditorAreaState {
+function createTwoGroupTestState(): EditorAreaState {
   // Start with empty state
   let state = createInitialEditorState();
-  const groupId = state.activeGroupId;
+  const firstGroupId = state.activeGroupId;
 
-  // Add many tabs to test horizontal scrolling behavior
+  // Add many tabs to test horizontal scrolling behavior (first group)
   const testTabs = [
     {
       uri: 'file:///docs/attention.pdf',
@@ -103,10 +103,44 @@ function createTestEditorState(): EditorAreaState {
   ];
 
   // Build state by applying actions through reducer (pure, testable)
+  // Add tabs to first group
   testTabs.forEach((tab) => {
     state = editorAreaReducer(state, {
       type: 'ADD_TAB',
-      groupId,
+      groupId: firstGroupId,
+      tab,
+    });
+  });
+
+  // Create second group via split (horizontal)
+  state = editorAreaReducer(state, {
+    type: 'SPLIT_GROUP',
+    groupId: firstGroupId,
+    direction: 'row',
+  });
+
+  // Get the ID of the newly created group
+  const groupIds = Object.keys(state.groups);
+  const secondGroupId = groupIds.find((id) => id !== firstGroupId)!;
+
+  // Add a few tabs to the second group
+  const secondGroupTabs = [
+    {
+      uri: 'file:///docs/gpt3.pdf',
+      title: 'GPT-3: Language Models are Few-Shot Learners',
+      viewer: 'stub' as const,
+    },
+    {
+      uri: 'file:///docs/llama.pdf',
+      title: 'LLaMA: Open and Efficient Foundation Language Models',
+      viewer: 'stub' as const,
+    },
+  ];
+
+  secondGroupTabs.forEach((tab) => {
+    state = editorAreaReducer(state, {
+      type: 'ADD_TAB',
+      groupId: secondGroupId,
       tab,
     });
   });
@@ -120,43 +154,10 @@ function createTestEditorState(): EditorAreaState {
 
 /**
  * Workbench - Top-level layout orchestrator
- * Currently testing EditorGroup with hardcoded state
- * Future: will contain Sidebar, EditorArea (with splits), PanelContainer, StatusBar
+ * Now featuring split-pane layout with allotment
+ * Future: will contain Sidebar, PanelContainer, StatusBar
  */
 export function Workbench() {
-  // Initialize reducer with test state using lazy initialization
-  // The function runs exactly once per component instance (StrictMode-safe)
-  const [editorState, dispatch] = useReducer(editorAreaReducer, undefined, createTestEditorState);
-
-  const activeGroup = editorState.groups[editorState.activeGroupId];
-
-  const handleSelectTab = (tabIndex: number) => {
-    dispatch({
-      type: 'SET_ACTIVE_TAB',
-      groupId: editorState.activeGroupId,
-      tabIndex,
-    });
-  };
-
-  const handleCloseTab = (tabIndex: number) => {
-    dispatch({
-      type: 'CLOSE_TAB',
-      groupId: editorState.activeGroupId,
-      tabIndex,
-    });
-  };
-
-  const handleTabContextMenu = (event: React.MouseEvent, tabIndex: number) => {
-    event.preventDefault();
-    console.log('Context menu for tab', tabIndex);
-    // Future: show context menu with options
-  };
-
-  const handleGroupClick = () => {
-    // Already active, no-op for now
-    console.log('Group clicked');
-  };
-
   return (
     <div className={styles.workbench}>
       <ErrorBoundary
@@ -167,16 +168,7 @@ export function Workbench() {
           </div>
         }
       >
-        <div className={styles.editorAreaTest}>
-          <EditorGroup
-            groupState={activeGroup}
-            isActive={true}
-            onSelectTab={handleSelectTab}
-            onCloseTab={handleCloseTab}
-            onTabContextMenu={handleTabContextMenu}
-            onGroupClick={handleGroupClick}
-          />
-        </div>
+        <EditorArea initialState={createTwoGroupTestState()} />
       </ErrorBoundary>
     </div>
   );
