@@ -41,7 +41,11 @@ function createTwoGroupTestState(): EditorAreaState {
 
   // Add tabs to left group
   const leftTabs = [
-    { uri: 'file:///docs/attention.pdf', title: 'Attention Is All You Need', viewer: 'stub' as const },
+    {
+      uri: 'file:///docs/attention.pdf',
+      title: 'Attention Is All You Need',
+      viewer: 'stub' as const,
+    },
     { uri: 'file:///docs/resnet.pdf', title: 'ResNet', viewer: 'stub' as const },
     { uri: 'file:///docs/bert.pdf', title: 'BERT', viewer: 'stub' as const },
   ];

@@ -844,10 +844,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
         expect(state.layout.children).toHaveLength(2);
         expect(state.layout.children[0].type).toBe('leaf');
         expect(state.layout.children[1].type).toBe('leaf');
-        if (
-          state.layout.children[0].type === 'leaf' &&
-          state.layout.children[1].type === 'leaf'
-        ) {
+        if (state.layout.children[0].type === 'leaf' && state.layout.children[1].type === 'leaf') {
           expect(state.layout.children[0].groupId).toBe(g2);
           expect(state.layout.children[1].groupId).toBe(g3);
         }
