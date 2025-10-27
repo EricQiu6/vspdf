@@ -1370,5 +1370,95 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
 
       expect(validateTree(state.layout)).toBe(true);
     });
+
+    it('all split nodes have unique IDs', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Create complex nested structure
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId,
+        direction: 'row',
+      });
+
+      const groupIds = Object.keys(state.groups);
+      const groupId2 = groupIds.find((id) => id !== groupId)!;
+
+      state = editorAreaReducer(state, {
+        type: 'SPLIT_GROUP',
+        groupId: groupId2,
+        direction: 'column',
+      });
+
+      // Collect all split node IDs
+      const collectSplitIds = (tree: LayoutTree): string[] => {
+        if (tree.type === 'leaf') return [];
+        return [tree.id, ...tree.children.flatMap(collectSplitIds)];
+      };
+
+      const splitIds = collectSplitIds(state.layout);
+
+      // All IDs should be unique
+      const uniqueIds = new Set(splitIds);
+      expect(uniqueIds.size).toBe(splitIds.length);
+
+      // All IDs should be truthy (non-empty strings)
+      expect(splitIds.every((id) => id && id.length > 0)).toBe(true);
+    });
+
+    it('split node IDs remain stable across unrelated actions', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      // Create split
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId,
+        direction: 'row',
+      });
+
+      // Capture the split node ID
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') {
+        throw new Error('Expected split node');
+      }
+      const originalSplitId = splitNode.id;
+
+      // Perform unrelated action (add tab)
+      state = editorAreaReducer(state, {
+        type: 'ADD_TAB',
+        groupId,
+        tab: { uri: 'doc.pdf', title: 'Doc', viewer: 'pdf' },
+      });
+
+      // Split node ID should remain unchanged
+      const updatedSplitNode = state.layout;
+      if (updatedSplitNode.type !== 'split') {
+        throw new Error('Expected split node');
+      }
+      expect(updatedSplitNode.id).toBe(originalSplitId);
+    });
+
+    it('split node IDs are RFC 4122 UUIDs', () => {
+      const initial = createInitialEditorState();
+      const groupId = Object.keys(initial.groups)[0];
+
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId,
+        direction: 'row',
+      });
+
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') {
+        throw new Error('Expected split node');
+      }
+
+      // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+      // where y is one of [8, 9, a, b]
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(splitNode.id).toMatch(uuidRegex);
+    });
   });
 });

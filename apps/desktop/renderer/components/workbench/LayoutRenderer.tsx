@@ -38,23 +38,17 @@ export const LayoutRenderer = React.memo(function LayoutRenderer({ node }: Layou
   // Direction mapping: our 'row' (side-by-side) = allotment's 'horizontal'
   //                    our 'column' (stacked) = allotment's 'vertical'
 
-  // Generate stable key based on node structure
-  // This forces remount when orientation or children change
+  // Use explicit ID for stable key
+  // This forces remount when the split node identity changes
   // Prevents allotment from getting stuck in wrong orientation
-  const splitKey = `split-${node.direction}-${node.children
-    .map((child) => (child.type === 'leaf' ? child.groupId : 'nested'))
-    .join('-')}`;
-
+  // Split node IDs are generated once and remain stable across re-renders
   return (
-    <Allotment key={splitKey} vertical={node.direction === 'column'}>
+    <Allotment key={node.id} vertical={node.direction === 'column'}>
       {node.children.map((child) => {
         // Use stable key based on child identity, not position
         // For leaf nodes: use groupId (stable across tree changes)
-        // For nested splits: use direction + child count (structural identity)
-        const paneKey =
-          child.type === 'leaf'
-            ? child.groupId
-            : `split-${child.direction}-${child.children.length}`;
+        // For nested splits: use split node ID (globally unique)
+        const paneKey = child.type === 'leaf' ? child.groupId : child.id;
 
         return (
           <Allotment.Pane key={paneKey}>
