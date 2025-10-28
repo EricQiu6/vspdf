@@ -117,6 +117,51 @@ export type AppEvent =
   | { type: 'viewer.annotationClicked'; uri: string; annotId: AnnotId }
   | { type: 'thread.updated'; uri: string; threadId: ThreadId };
 
+// EditorArea operations API
+export interface EditorAreaOperations {
+  /**
+   * Split a group into two groups with specified direction
+   * @param groupId - Group to split
+   * @param direction - 'row' (vertical divider, side-by-side) or 'column' (horizontal divider, stacked)
+   */
+  splitGroup(groupId: string, direction: 'row' | 'column'): void;
+
+  /**
+   * Close a group and remove it from the layout tree
+   * @param groupId - Group to close
+   */
+  closeGroup(groupId: string): void;
+
+  /**
+   * Open a file in a specific group (or active group if not specified)
+   * @param uri - File URI to open
+   * @param groupId - Optional group ID (defaults to active group)
+   */
+  openFile(uri: string, groupId?: string): void;
+
+  /**
+   * Set focus to a specific group
+   * @param groupId - Group to focus
+   */
+  focusGroup(groupId: string): void;
+
+  /**
+   * Close a specific tab in a group
+   * @param groupId - Group containing the tab
+   * @param tabIndex - Index of tab to close
+   */
+  closeTab(groupId: string, tabIndex: number): void;
+
+  /**
+   * Move a tab from one group to another (or reorder within same group)
+   * @param fromGroup - Source group ID
+   * @param tabIndex - Index of tab in source group
+   * @param toGroup - Destination group ID
+   * @param toIndex - Optional destination index (defaults to end)
+   */
+  moveTab(fromGroup: string, tabIndex: number, toGroup: string, toIndex?: number): void;
+}
+
 // Command types
 export interface CommandContext {
   viewer?: ViewerHandle & { capabilities?: ViewerCapabilities };
@@ -124,6 +169,7 @@ export interface CommandContext {
   thread?: ThreadViewModel;
   activeGroup?: GroupId;
   activeTab?: DocTab;
+  editorAreaOps?: EditorAreaOperations;
 }
 
 export interface Command {
