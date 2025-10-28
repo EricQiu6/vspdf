@@ -120,11 +120,36 @@ export type AppEvent =
 // EditorArea operations API
 export interface EditorAreaOperations {
   /**
-   * Split a group into two groups with specified direction
+   * Split active group, creating new group to the RIGHT
+   * Original group stays on left, new empty group appears on right
    * @param groupId - Group to split
-   * @param direction - 'row' (vertical divider, side-by-side) or 'column' (horizontal divider, stacked)
+   * @note The newly created group is automatically focused
    */
-  splitGroup(groupId: string, direction: 'row' | 'column'): void;
+  splitRight(groupId: string): void;
+
+  /**
+   * Split active group, creating new group to the LEFT
+   * New empty group appears on left, original group moves to right
+   * @param groupId - Group to split
+   * @note The newly created group is automatically focused
+   */
+  splitLeft(groupId: string): void;
+
+  /**
+   * Split active group, creating new group BELOW
+   * Original group stays on top, new empty group appears below
+   * @param groupId - Group to split
+   * @note The newly created group is automatically focused
+   */
+  splitDown(groupId: string): void;
+
+  /**
+   * Split active group, creating new group ABOVE
+   * New empty group appears above, original group moves below
+   * @param groupId - Group to split
+   * @note The newly created group is automatically focused
+   */
+  splitUp(groupId: string): void;
 
   /**
    * Close a group and remove it from the layout tree

@@ -46,14 +46,28 @@ export function EditorAreaTestControls() {
   const handleSplitRight = useCallback(() => {
     const ctx = buildCommandContext();
     if (ctx.activeGroup && ctx.editorAreaOps) {
-      ctx.editorAreaOps.splitGroup(ctx.activeGroup, 'row');
+      ctx.editorAreaOps.splitRight(ctx.activeGroup);
+    }
+  }, [buildCommandContext]);
+
+  const handleSplitLeft = useCallback(() => {
+    const ctx = buildCommandContext();
+    if (ctx.activeGroup && ctx.editorAreaOps) {
+      ctx.editorAreaOps.splitLeft(ctx.activeGroup);
     }
   }, [buildCommandContext]);
 
   const handleSplitDown = useCallback(() => {
     const ctx = buildCommandContext();
     if (ctx.activeGroup && ctx.editorAreaOps) {
-      ctx.editorAreaOps.splitGroup(ctx.activeGroup, 'column');
+      ctx.editorAreaOps.splitDown(ctx.activeGroup);
+    }
+  }, [buildCommandContext]);
+
+  const handleSplitUp = useCallback(() => {
+    const ctx = buildCommandContext();
+    if (ctx.activeGroup && ctx.editorAreaOps) {
+      ctx.editorAreaOps.splitUp(ctx.activeGroup);
     }
   }, [buildCommandContext]);
 
@@ -139,17 +153,31 @@ export function EditorAreaTestControls() {
         Test Controls
       </div>
 
-      <div style={{ display: 'flex', gap: '4px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+        <button
+          onClick={handleSplitLeft}
+          title="Split Left - New group appears on left"
+          style={buttonStyle}
+        >
+          ← Split
+        </button>
         <button
           onClick={handleSplitRight}
-          title="Split Right (Cmd+\) - Creates vertical divider"
+          title="Split Right (Cmd+\) - New group appears on right"
           style={buttonStyle}
         >
           Split →
         </button>
         <button
+          onClick={handleSplitUp}
+          title="Split Up - New group appears above"
+          style={buttonStyle}
+        >
+          ↑ Split
+        </button>
+        <button
           onClick={handleSplitDown}
-          title="Split Down (Cmd+K Cmd+\) - Creates horizontal divider"
+          title="Split Down (Cmd+K Cmd+\) - New group appears below"
           style={buttonStyle}
         >
           Split ↓

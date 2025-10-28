@@ -28,16 +28,27 @@ import type { Command } from '@vspdf/types';
 export const splitRightCommand: Command = {
   id: 'workbench.action.splitRight',
   handler: (ctx) => {
-    // Defensive checks (should never fail if `when` is correct)
     if (!ctx.editorAreaOps || !ctx.activeGroup) {
       console.warn('splitRightCommand: Missing required context');
       return;
     }
-
-    ctx.editorAreaOps.splitGroup(ctx.activeGroup, 'row');
+    ctx.editorAreaOps.splitRight(ctx.activeGroup);
   },
   when: (ctx) => !!ctx.activeGroup,
-  keybinding: 'Cmd+\\', // VS Code convention
+  keybinding: 'Cmd+\\',
+};
+
+export const splitLeftCommand: Command = {
+  id: 'workbench.action.splitLeft',
+  handler: (ctx) => {
+    if (!ctx.editorAreaOps || !ctx.activeGroup) {
+      console.warn('splitLeftCommand: Missing required context');
+      return;
+    }
+    ctx.editorAreaOps.splitLeft(ctx.activeGroup);
+  },
+  when: (ctx) => !!ctx.activeGroup,
+  keybinding: 'Cmd+K Cmd+Left',
 };
 
 export const splitDownCommand: Command = {
@@ -47,11 +58,23 @@ export const splitDownCommand: Command = {
       console.warn('splitDownCommand: Missing required context');
       return;
     }
-
-    ctx.editorAreaOps.splitGroup(ctx.activeGroup, 'column');
+    ctx.editorAreaOps.splitDown(ctx.activeGroup);
   },
   when: (ctx) => !!ctx.activeGroup,
-  keybinding: 'Cmd+K Cmd+\\', // VS Code convention for secondary split
+  keybinding: 'Cmd+K Cmd+\\',
+};
+
+export const splitUpCommand: Command = {
+  id: 'workbench.action.splitUp',
+  handler: (ctx) => {
+    if (!ctx.editorAreaOps || !ctx.activeGroup) {
+      console.warn('splitUpCommand: Missing required context');
+      return;
+    }
+    ctx.editorAreaOps.splitUp(ctx.activeGroup);
+  },
+  when: (ctx) => !!ctx.activeGroup,
+  keybinding: 'Cmd+K Cmd+Up',
 };
 
 // ============================================================================
@@ -160,14 +183,16 @@ export const openFileCommand: Command = {
  */
 export function registerEditorCommands(): void {
   commandRegistry.register(splitRightCommand);
+  commandRegistry.register(splitLeftCommand);
   commandRegistry.register(splitDownCommand);
+  commandRegistry.register(splitUpCommand);
   commandRegistry.register(closeGroupCommand);
   commandRegistry.register(focusNextGroupCommand);
   commandRegistry.register(focusPreviousGroupCommand);
   commandRegistry.register(closeActiveEditorCommand);
   commandRegistry.register(openFileCommand);
 
-  console.log('[Commands] Registered 7 editor commands');
+  console.log('[Commands] Registered 9 editor commands');
 }
 
 /**
@@ -177,7 +202,9 @@ export function registerEditorCommands(): void {
  */
 export function unregisterEditorCommands(): void {
   commandRegistry.unregister('workbench.action.splitRight');
+  commandRegistry.unregister('workbench.action.splitLeft');
   commandRegistry.unregister('workbench.action.splitDown');
+  commandRegistry.unregister('workbench.action.splitUp');
   commandRegistry.unregister('workbench.action.closeGroup');
   commandRegistry.unregister('workbench.action.focusNextGroup');
   commandRegistry.unregister('workbench.action.focusPreviousGroup');

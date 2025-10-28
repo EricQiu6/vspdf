@@ -41,11 +41,39 @@ export function useEditorAreaOperations(): EditorAreaOperations {
   // This ensures referential equality across renders, preventing cascading updates
   return useMemo<EditorAreaOperations>(
     () => ({
-      splitGroup(groupId: string, direction: 'row' | 'column'): void {
+      splitRight(groupId: string): void {
         dispatch({
           type: 'SPLIT_GROUP',
           groupId,
-          direction,
+          direction: 'row',
+          position: 'after', // New group appears on the right
+        });
+      },
+
+      splitLeft(groupId: string): void {
+        dispatch({
+          type: 'SPLIT_GROUP',
+          groupId,
+          direction: 'row',
+          position: 'before', // New group appears on the left
+        });
+      },
+
+      splitDown(groupId: string): void {
+        dispatch({
+          type: 'SPLIT_GROUP',
+          groupId,
+          direction: 'column',
+          position: 'after', // New group appears below
+        });
+      },
+
+      splitUp(groupId: string): void {
+        dispatch({
+          type: 'SPLIT_GROUP',
+          groupId,
+          direction: 'column',
+          position: 'before', // New group appears above
         });
       },
 
