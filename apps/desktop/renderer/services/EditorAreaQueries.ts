@@ -57,7 +57,7 @@ export function getAllGroupIds(tree: LayoutTree): string[] {
   }
 
   // Flatten all children recursively
-  return tree.children.flatMap(child => getAllGroupIds(child));
+  return tree.children.flatMap((child) => getAllGroupIds(child));
 }
 
 /**

@@ -42,11 +42,7 @@ describe('EditorAreaQueries', () => {
   const twoGroups: LayoutTree = createRow([createLeaf('g1'), createLeaf('g2')]);
 
   // Three groups in a row: g1 | g2 | g3
-  const threeGroups: LayoutTree = createRow([
-    createLeaf('g1'),
-    createLeaf('g2'),
-    createLeaf('g3'),
-  ]);
+  const threeGroups: LayoutTree = createRow([createLeaf('g1'), createLeaf('g2'), createLeaf('g3')]);
 
   // Nested: (g1 | g2) / g3 (row inside column)
   const nestedSplit: LayoutTree = createColumn([

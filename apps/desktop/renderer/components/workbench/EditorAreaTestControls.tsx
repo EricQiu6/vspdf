@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useEditorAreaState } from './EditorAreaContext';
 import { useEditorAreaOperations } from '../../hooks/useEditorAreaOperations';
 import { getNextGroupId, getPrevGroupId, getGroupCount } from '../../services/EditorAreaQueries';
@@ -216,9 +216,7 @@ export function EditorAreaTestControls() {
         }}
       >
         <div>Groups: {groupCount}</div>
-        <div>
-          Active: {state.activeGroupId.substring(0, 8)}...
-        </div>
+        <div>Active: {state.activeGroupId.substring(0, 8)}...</div>
         {activeGroup && <div>Tabs: {activeGroup.tabs.length}</div>}
       </div>
     </div>

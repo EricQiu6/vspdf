@@ -74,7 +74,7 @@ export const closeGroupCommand: Command = {
 
 export const focusNextGroupCommand: Command = {
   id: 'workbench.action.focusNextGroup',
-  handler: (ctx) => {
+  handler: (_ctx) => {
     // This command needs access to state to find next group
     // In a real implementation, we'd need to either:
     // 1. Add navigation helpers to operations API
@@ -90,7 +90,7 @@ export const focusNextGroupCommand: Command = {
 
 export const focusPreviousGroupCommand: Command = {
   id: 'workbench.action.focusPreviousGroup',
-  handler: (ctx) => {
+  handler: (_ctx) => {
     console.log('focusPreviousGroupCommand: Not yet implemented');
   },
   when: (ctx) => !!ctx.activeGroup,
