@@ -3,6 +3,7 @@ import type { EditorAreaState } from '@vspdf/types';
 import { editorAreaReducer, createInitialEditorState } from '../../services/EditorAreaReducer';
 import { EditorAreaStateContext, EditorAreaDispatchContext } from './EditorAreaContext';
 import { LayoutRenderer } from './LayoutRenderer';
+import { EditorAreaTestControls } from './EditorAreaTestControls';
 import styles from './EditorArea.module.css';
 
 interface EditorAreaProps {
@@ -47,6 +48,8 @@ export function EditorArea({ initialState }: EditorAreaProps) {
       <EditorAreaDispatchContext.Provider value={dispatch}>
         <div className={styles.editorArea}>
           <LayoutRenderer node={state.layout} />
+          {/* TODO: TEMPORARY - Remove when command palette is implemented */}
+          {import.meta.env.DEV && <EditorAreaTestControls />}
         </div>
       </EditorAreaDispatchContext.Provider>
     </EditorAreaStateContext.Provider>

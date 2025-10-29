@@ -117,6 +117,76 @@ export type AppEvent =
   | { type: 'viewer.annotationClicked'; uri: string; annotId: AnnotId }
   | { type: 'thread.updated'; uri: string; threadId: ThreadId };
 
+// EditorArea operations API
+export interface EditorAreaOperations {
+  /**
+   * Split active group, creating new group to the RIGHT
+   * Original group stays on left, new empty group appears on right
+   * @param groupId - Group to split
+   * @note The newly created group is automatically focused
+   */
+  splitRight(groupId: string): void;
+
+  /**
+   * Split active group, creating new group to the LEFT
+   * New empty group appears on left, original group moves to right
+   * @param groupId - Group to split
+   * @note The newly created group is automatically focused
+   */
+  splitLeft(groupId: string): void;
+
+  /**
+   * Split active group, creating new group BELOW
+   * Original group stays on top, new empty group appears below
+   * @param groupId - Group to split
+   * @note The newly created group is automatically focused
+   */
+  splitDown(groupId: string): void;
+
+  /**
+   * Split active group, creating new group ABOVE
+   * New empty group appears above, original group moves below
+   * @param groupId - Group to split
+   * @note The newly created group is automatically focused
+   */
+  splitUp(groupId: string): void;
+
+  /**
+   * Close a group and remove it from the layout tree
+   * @param groupId - Group to close
+   */
+  closeGroup(groupId: string): void;
+
+  /**
+   * Open a file in a specific group (or active group if not specified)
+   * @param uri - File URI to open
+   * @param groupId - Optional group ID (defaults to active group)
+   */
+  openFile(uri: string, groupId?: string): void;
+
+  /**
+   * Set focus to a specific group
+   * @param groupId - Group to focus
+   */
+  focusGroup(groupId: string): void;
+
+  /**
+   * Close a specific tab in a group
+   * @param groupId - Group containing the tab
+   * @param tabIndex - Index of tab to close
+   */
+  closeTab(groupId: string, tabIndex: number): void;
+
+  /**
+   * Move a tab from one group to another (or reorder within same group)
+   * @param fromGroup - Source group ID
+   * @param tabIndex - Index of tab in source group
+   * @param toGroup - Destination group ID
+   * @param toIndex - Optional destination index (defaults to end)
+   */
+  moveTab(fromGroup: string, tabIndex: number, toGroup: string, toIndex?: number): void;
+}
+
 // Command types
 export interface CommandContext {
   viewer?: ViewerHandle & { capabilities?: ViewerCapabilities };
@@ -124,6 +194,7 @@ export interface CommandContext {
   thread?: ThreadViewModel;
   activeGroup?: GroupId;
   activeTab?: DocTab;
+  editorAreaOps?: EditorAreaOperations;
 }
 
 export interface Command {

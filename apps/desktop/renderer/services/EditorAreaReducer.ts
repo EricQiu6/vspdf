@@ -337,7 +337,7 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
     }
 
     case 'SPLIT_GROUP': {
-      const { groupId, direction } = action;
+      const { groupId, direction, position = 'after' } = action;
 
       // Validate group exists
       const path = findLeafPath(state.layout, groupId);
@@ -357,12 +357,18 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
       const originalLeaf: LeafNode = { type: 'leaf', groupId };
       const newLeaf: LeafNode = { type: 'leaf', groupId: newGroupId };
 
+      // Position determines child order:
+      // - 'after' (default): [original, new] = right/down
+      // - 'before': [new, original] = left/up
+      const children: LayoutTree[] =
+        position === 'before' ? [newLeaf, originalLeaf] : [originalLeaf, newLeaf];
+
       const splitNode: SplitNode = {
         type: 'split',
         id: generateGroupId(), // Generate unique ID for stable React keys
         direction,
         sizes: [0.5, 0.5],
-        children: [originalLeaf, newLeaf],
+        children,
       };
 
       // Replace the original leaf with the split
@@ -375,6 +381,7 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
           ...state.groups,
           [newGroupId]: newGroup,
         },
+        activeGroupId: newGroupId, // Focus the newly created group (VS Code behavior)
       };
     }
 

@@ -1461,4 +1461,245 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
       expect(splitNode.id).toMatch(uuidRegex);
     });
   });
+
+  // ============================================================================
+  // SPLIT_GROUP - Position Parameter (Split Left/Right/Up/Down)
+  // ============================================================================
+
+  describe('SPLIT_GROUP - position parameter', () => {
+    it('defaults to "after" when position not specified (backward compatibility)', () => {
+      const initial = createInitialEditorState();
+      const originalGroupId = Object.keys(initial.groups)[0];
+
+      const state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: originalGroupId,
+        direction: 'row',
+        // position omitted - should default to 'after'
+      });
+
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') throw new Error('Expected split node');
+
+      // Original group should be first child (left)
+      const firstChild = splitNode.children[0];
+      const secondChild = splitNode.children[1];
+
+      expect(firstChild.type).toBe('leaf');
+      expect(secondChild.type).toBe('leaf');
+      if (firstChild.type === 'leaf') {
+        expect(firstChild.groupId).toBe(originalGroupId);
+      }
+    });
+
+    it('split right: position="after" + direction="row" puts new group on right', () => {
+      const initial = createInitialEditorState();
+      const originalGroupId = Object.keys(initial.groups)[0];
+
+      const state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: originalGroupId,
+        direction: 'row',
+        position: 'after',
+      });
+
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') throw new Error('Expected split node');
+
+      // Children order: [original, new]
+      const leftChild = splitNode.children[0];
+      const rightChild = splitNode.children[1];
+
+      expect(leftChild.type).toBe('leaf');
+      expect(rightChild.type).toBe('leaf');
+
+      if (leftChild.type === 'leaf' && rightChild.type === 'leaf') {
+        expect(leftChild.groupId).toBe(originalGroupId); // Original on left
+        expect(rightChild.groupId).not.toBe(originalGroupId); // New on right
+      }
+    });
+
+    it('split left: position="before" + direction="row" puts new group on left', () => {
+      const initial = createInitialEditorState();
+      const originalGroupId = Object.keys(initial.groups)[0];
+
+      const state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: originalGroupId,
+        direction: 'row',
+        position: 'before',
+      });
+
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') throw new Error('Expected split node');
+
+      // Children order: [new, original]
+      const leftChild = splitNode.children[0];
+      const rightChild = splitNode.children[1];
+
+      expect(leftChild.type).toBe('leaf');
+      expect(rightChild.type).toBe('leaf');
+
+      if (leftChild.type === 'leaf' && rightChild.type === 'leaf') {
+        expect(leftChild.groupId).not.toBe(originalGroupId); // New on left
+        expect(rightChild.groupId).toBe(originalGroupId); // Original on right
+      }
+    });
+
+    it('split down: position="after" + direction="column" puts new group below', () => {
+      const initial = createInitialEditorState();
+      const originalGroupId = Object.keys(initial.groups)[0];
+
+      const state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: originalGroupId,
+        direction: 'column',
+        position: 'after',
+      });
+
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') throw new Error('Expected split node');
+
+      // Children order: [original, new]
+      const topChild = splitNode.children[0];
+      const bottomChild = splitNode.children[1];
+
+      expect(topChild.type).toBe('leaf');
+      expect(bottomChild.type).toBe('leaf');
+
+      if (topChild.type === 'leaf' && bottomChild.type === 'leaf') {
+        expect(topChild.groupId).toBe(originalGroupId); // Original on top
+        expect(bottomChild.groupId).not.toBe(originalGroupId); // New below
+      }
+    });
+
+    it('split up: position="before" + direction="column" puts new group above', () => {
+      const initial = createInitialEditorState();
+      const originalGroupId = Object.keys(initial.groups)[0];
+
+      const state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: originalGroupId,
+        direction: 'column',
+        position: 'before',
+      });
+
+      const splitNode = state.layout;
+      if (splitNode.type !== 'split') throw new Error('Expected split node');
+
+      // Children order: [new, original]
+      const topChild = splitNode.children[0];
+      const bottomChild = splitNode.children[1];
+
+      expect(topChild.type).toBe('leaf');
+      expect(bottomChild.type).toBe('leaf');
+
+      if (topChild.type === 'leaf' && bottomChild.type === 'leaf') {
+        expect(topChild.groupId).not.toBe(originalGroupId); // New above
+        expect(bottomChild.groupId).toBe(originalGroupId); // Original below
+      }
+    });
+
+    it('all 4 split directions create valid layout structures', () => {
+      const testCases: Array<{
+        position: 'before' | 'after';
+        direction: 'row' | 'column';
+        name: string;
+      }> = [
+        { position: 'after', direction: 'row', name: 'Split Right' },
+        { position: 'before', direction: 'row', name: 'Split Left' },
+        { position: 'after', direction: 'column', name: 'Split Down' },
+        { position: 'before', direction: 'column', name: 'Split Up' },
+      ];
+
+      testCases.forEach(({ position, direction, _name }) => {
+        const initial = createInitialEditorState();
+        const groupId = Object.keys(initial.groups)[0];
+
+        const state = editorAreaReducer(initial, {
+          type: 'SPLIT_GROUP',
+          groupId,
+          direction,
+          position,
+        });
+
+        // All should create valid split nodes
+        expect(state.layout.type).toBe('split');
+        if (state.layout.type === 'split') {
+          expect(state.layout.children.length).toBe(2);
+          expect(state.layout.direction).toBe(direction);
+          expect(state.layout.sizes).toEqual([0.5, 0.5]);
+        }
+
+        // All should create 2 groups total
+        expect(Object.keys(state.groups).length).toBe(2);
+
+        // New group should be empty
+        const newGroupId = Object.keys(state.groups).find((id) => id !== groupId);
+        expect(newGroupId).toBeDefined();
+        if (newGroupId) {
+          expect(state.groups[newGroupId].tabs).toEqual([]);
+          expect(state.groups[newGroupId].activeIndex).toBe(-1);
+        }
+      });
+    });
+
+    it('position works correctly with nested splits', () => {
+      const initial = createInitialEditorState();
+      const group1 = Object.keys(initial.groups)[0];
+
+      // First split: group1 → [group1, group2] (right)
+      let state = editorAreaReducer(initial, {
+        type: 'SPLIT_GROUP',
+        groupId: group1,
+        direction: 'row',
+        position: 'after',
+      });
+
+      const group2 = Object.keys(state.groups).find((id) => id !== group1)!;
+
+      // Second split: group2 → [group3, group2] (left)
+      state = editorAreaReducer(state, {
+        type: 'SPLIT_GROUP',
+        groupId: group2,
+        direction: 'row',
+        position: 'before',
+      });
+
+      const group3 = Object.keys(state.groups).find((id) => id !== group1 && id !== group2)!;
+
+      // Verify structure: row[group1, row[group3, group2]]
+      const rootSplit = state.layout;
+      expect(rootSplit.type).toBe('split');
+      if (rootSplit.type === 'split') {
+        expect(rootSplit.children.length).toBe(2);
+
+        const leftChild = rootSplit.children[0];
+        const rightChild = rootSplit.children[1];
+
+        // Left should be group1
+        expect(leftChild.type).toBe('leaf');
+        if (leftChild.type === 'leaf') {
+          expect(leftChild.groupId).toBe(group1);
+        }
+
+        // Right should be nested split with [group3, group2]
+        expect(rightChild.type).toBe('split');
+        if (rightChild.type === 'split') {
+          expect(rightChild.children.length).toBe(2);
+
+          const nestedLeft = rightChild.children[0];
+          const nestedRight = rightChild.children[1];
+
+          expect(nestedLeft.type).toBe('leaf');
+          expect(nestedRight.type).toBe('leaf');
+
+          if (nestedLeft.type === 'leaf' && nestedRight.type === 'leaf') {
+            expect(nestedLeft.groupId).toBe(group3); // New group on left
+            expect(nestedRight.groupId).toBe(group2); // Original on right
+          }
+        }
+      }
+    });
+  });
 });
