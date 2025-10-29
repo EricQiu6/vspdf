@@ -116,9 +116,9 @@ export function useEditorAreaOperations(): EditorAreaOperations {
       moveTab(fromGroup: string, tabIndex: number, toGroup: string, toIndex?: number): void {
         dispatch({
           type: 'MOVE_TAB',
-          fromGroup,
+          fromGroupId: fromGroup,
+          toGroupId: toGroup,
           tabIndex,
-          toGroup,
           toIndex,
         });
       },

@@ -1612,7 +1612,7 @@ describe('EditorAreaReducer - TDD Test Suite', () => {
         { position: 'before', direction: 'column', name: 'Split Up' },
       ];
 
-      testCases.forEach(({ position, direction, name }) => {
+      testCases.forEach(({ position, direction, _name }) => {
         const initial = createInitialEditorState();
         const groupId = Object.keys(initial.groups)[0];
 
