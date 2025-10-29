@@ -83,10 +83,22 @@
   cursor: grabbing;
 }
 
-.tab.dropTarget::before {
+.tab.dropTargetLeft::before {
   content: '';
   position: absolute;
   left: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  animation: pulse 1s ease-in-out infinite;
+  z-index: 1;
+}
+
+.tab.dropTargetRight::after {
+  content: '';
+  position: absolute;
+  right: -2px;
   top: 0;
   bottom: 0;
   width: 4px;

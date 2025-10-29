@@ -24,7 +24,7 @@ interface TabProps {
 export function Tab({ tab, groupId, index, isActive, onSelect, onClose, onContextMenu }: TabProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isDropTarget, setIsDropTarget] = useState(false);
+  const [dropEdge, setDropEdge] = useState<'idle' | 'left' | 'right'>('idle');
 
   // Access EditorArea operations (no state subscription - prevents unnecessary re-renders)
   const editorAreaOps = useEditorAreaOperations();
@@ -53,10 +53,24 @@ export function Tab({ tab, groupId, index, isActive, onSelect, onClose, onContex
       dropTargetForElements({
         element,
         canDrop: ({ source }) => source.data.type === 'tab',
-        onDragEnter: () => setIsDropTarget(true),
-        onDragLeave: () => setIsDropTarget(false),
-        onDrop: ({ source }) => {
-          setIsDropTarget(false);
+        onDragEnter: ({ location }) => {
+          // Detect which edge on enter
+          const tabRect = element.getBoundingClientRect();
+          const cursorX = location.current.input.clientX;
+          const tabCenterX = tabRect.left + tabRect.width / 2;
+          setDropEdge(cursorX < tabCenterX ? 'left' : 'right');
+        },
+        onDrag: ({ location }) => {
+          // Continuously update edge detection as cursor moves
+          const tabRect = element.getBoundingClientRect();
+          const cursorX = location.current.input.clientX;
+          const tabCenterX = tabRect.left + tabRect.width / 2;
+          const newEdge = cursorX < tabCenterX ? 'left' : 'right';
+          setDropEdge(newEdge);
+        },
+        onDragLeave: () => setDropEdge('idle'),
+        onDrop: ({ source, location }) => {
+          setDropEdge('idle');
 
           // Validate drag data using type guard (no unsafe 'as' casts)
           if (!isTabDragData(source.data)) {
@@ -68,23 +82,36 @@ export function Tab({ tab, groupId, index, isActive, onSelect, onClose, onContex
           const fromGroupId = dragData.groupId;
           const fromIndex = dragData.tabIndex;
 
-          // Calculate target index accounting for array splice semantics
-          // When reordering within same group, removing source shifts indices:
-          // Example: [A, B, C, D] → move index 1 (B) to index 3
-          // After removing B: [A, C, D] → "index 3" is now "index 2"
-          let targetIndex = index;
-          if (fromGroupId === groupId && fromIndex < index) {
-            targetIndex = index - 1; // Adjust for source removal shifting indices left
+          // Edge-based insertion logic: detect which half of the tab was dropped on
+          // This matches VS Code behavior where drop position is determined by cursor position
+          const tabRect = element.getBoundingClientRect();
+          const cursorX = location.current.input.clientX;
+          const tabCenterX = tabRect.left + tabRect.width / 2;
+
+          // Determine if cursor is on left or right half of tab
+          const isLeftHalf = cursorX < tabCenterX;
+
+          // Calculate insertion index based on edge detection
+          // Left half: insert BEFORE this tab (at this tab's index)
+          // Right half: insert AFTER this tab (at this tab's index + 1)
+          let insertionIndex = isLeftHalf ? index : index + 1;
+
+          // Adjust for array splice semantics when moving within same group
+          // When removing source first, all indices after it shift left by 1
+          // Example: [A, B, C, D] → move B (index 1) to position 3
+          // After removing B: [A, C, D] → position 3 becomes position 2
+          if (fromGroupId === groupId && fromIndex < insertionIndex) {
+            insertionIndex = insertionIndex - 1;
           }
 
           // Skip if this would result in no movement (no-op optimization)
-          if (fromGroupId === groupId && fromIndex === targetIndex) {
+          if (fromGroupId === groupId && fromIndex === insertionIndex) {
             return;
           }
 
           // Move tab using EditorArea operations API
           // Auto-close logic is now handled by the reducer (no stale closure risk)
-          editorAreaOps.moveTab(fromGroupId, fromIndex, groupId, targetIndex);
+          editorAreaOps.moveTab(fromGroupId, fromIndex, groupId, insertionIndex);
         },
       })
     );
@@ -107,7 +134,7 @@ export function Tab({ tab, groupId, index, isActive, onSelect, onClose, onContex
   return (
     <div
       ref={ref}
-      className={`${styles.tab} ${isActive ? styles.active : ''} ${isDragging ? styles.dragging : ''} ${isDropTarget ? styles.dropTarget : ''}`}
+      className={`${styles.tab} ${isActive ? styles.active : ''} ${isDragging ? styles.dragging : ''} ${dropEdge === 'left' ? styles.dropTargetLeft : ''} ${dropEdge === 'right' ? styles.dropTargetRight : ''}`}
       role="tab"
       aria-selected={isActive}
       tabIndex={isActive ? 0 : -1}
