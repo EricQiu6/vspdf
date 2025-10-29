@@ -31,6 +31,10 @@ export default [
         require: 'readonly',
         module: 'readonly',
         exports: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        MouseEvent: 'readonly',
+        KeyboardEvent: 'readonly',
       },
     },
     plugins: {

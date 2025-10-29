@@ -212,6 +212,9 @@ export type {
   EditorAreaState,
   EditorGroupState,
   EditorAction,
+  TabDragData,
 } from './editor';
+
+export { isTabDragData } from './editor';
 
 export {};

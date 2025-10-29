@@ -67,3 +67,43 @@ export type EditorAction =
       tabIndex: number;
       toIndex?: number;
     };
+
+/**
+ * Drag data contract for tab drag-and-drop
+ * Used by @atlaskit/pragmatic-drag-and-drop
+ */
+export interface TabDragData {
+  type: 'tab';
+  groupId: string;
+  tabIndex: number;
+  tabId: string;
+  title: string;
+}
+
+/**
+ * Type guard for validating drag data from unknown sources
+ * Prevents unsafe type assertions and runtime errors
+ *
+ * @example
+ * if (!isTabDragData(source.data)) {
+ *   console.warn('Invalid drag data');
+ *   return;
+ * }
+ * const dragData = source.data; // Now safely typed
+ */
+export function isTabDragData(data: unknown): data is TabDragData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    data.type === 'tab' &&
+    'groupId' in data &&
+    typeof data.groupId === 'string' &&
+    'tabIndex' in data &&
+    typeof data.tabIndex === 'number' &&
+    'tabId' in data &&
+    typeof data.tabId === 'string' &&
+    'title' in data &&
+    typeof data.title === 'string'
+  );
+}

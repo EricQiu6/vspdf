@@ -12,8 +12,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "allotment": "^1.20.4",
+    "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
     "@radix-ui/react-tabs": "^1.1.1",
+    "allotment": "^1.20.4",
     "dompurify": "^3.2.0",
     "katex": "^0.16.11",
     "pdfjs-dist": "^4.8.69",
