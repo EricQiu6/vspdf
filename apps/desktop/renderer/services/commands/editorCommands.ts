@@ -48,7 +48,7 @@ export const splitLeftCommand: Command = {
     ctx.editorAreaOps.splitLeft(ctx.activeGroup);
   },
   when: (ctx) => !!ctx.activeGroup,
-  keybinding: 'Cmd+K Cmd+Left',
+  keybinding: 'Cmd+K Cmd+[',
 };
 
 export const splitDownCommand: Command = {
