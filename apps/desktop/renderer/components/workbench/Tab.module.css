@@ -10,7 +10,9 @@
   border-right: 1px solid var(--border-color);
   cursor: grab; /* Indicate tab is draggable */
   user-select: none;
-  transition: background-color 0.1s ease, opacity 0.2s ease;
+  transition:
+    background-color 0.1s ease,
+    opacity 0.2s ease;
 }
 
 .tab:active {
@@ -59,7 +61,9 @@
   cursor: pointer;
   border-radius: 3px;
   opacity: 0;
-  transition: opacity 0.1s ease, background-color 0.1s ease;
+  transition:
+    opacity 0.1s ease,
+    background-color 0.1s ease;
 }
 
 .tab:hover .closeButton,
@@ -91,7 +95,7 @@
   bottom: 0;
   width: 4px;
   background: var(--accent);
-  animation: pulse 1s ease-in-out infinite;
+  animation: none;
   z-index: 1;
 }
 
@@ -103,7 +107,7 @@
   bottom: 0;
   width: 4px;
   background: var(--accent);
-  animation: pulse 1s ease-in-out infinite;
+  animation: none;
   z-index: 1;
 }
 
