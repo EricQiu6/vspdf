@@ -496,7 +496,8 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
           newToActiveIndex = 0; // First tab becomes active
         }
 
-        return {
+        // Apply the state update with moved tab
+        let newState: EditorAreaState = {
           ...state,
           groups: {
             ...state.groups,
@@ -512,6 +513,17 @@ export function editorAreaReducer(state: EditorAreaState, action: EditorAction):
             },
           },
         };
+
+        // Auto-close source group if it's now empty
+        // This ensures the reducer maintains invariant: multi-group workspaces have no empty groups
+        if (newFromTabs.length === 0 && Object.keys(newState.groups).length > 1) {
+          newState = editorAreaReducer(newState, {
+            type: 'CLOSE_GROUP',
+            groupId: fromGroupId,
+          });
+        }
+
+        return newState;
       }
     }
 

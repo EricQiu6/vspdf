@@ -63,6 +63,7 @@ export function EditorGroup({
       data-group-id={groupState.id}
     >
       <TabBar
+        groupId={groupState.id}
         tabs={tabs}
         activeIndex={activeIndex}
         onSelectTab={onSelectTab}
