@@ -1,7 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { DocTab, TabDragData } from '@vspdf/types';
 import { isTabDragData } from '@vspdf/types';
-import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import {
+  draggable,
+  dropTargetForElements,
+} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { useEditorAreaOperations } from '../../hooks/useEditorAreaOperations';
 import styles from './Tab.module.css';

@@ -130,10 +130,7 @@ export function TabBar({
 
   if (tabs.length === 0) {
     return (
-      <div
-        ref={tabListRef}
-        className={`${styles.tabBar} ${isDropOver ? styles.dropOver : ''}`}
-      >
+      <div ref={tabListRef} className={`${styles.tabBar} ${isDropOver ? styles.dropOver : ''}`}>
         <div className={styles.emptyState}>No tabs open</div>
       </div>
     );
