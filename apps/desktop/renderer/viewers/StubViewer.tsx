@@ -1,5 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
 import type { ViewerProps, ViewerHandle } from '@vspdf/types';
+import { useContextKey } from '../hooks/useContextKey';
 
 /**
  * StubViewer - Placeholder viewer for development
@@ -7,10 +8,18 @@ import type { ViewerProps, ViewerHandle } from '@vspdf/types';
  */
 export const StubViewer = forwardRef<ViewerHandle, ViewerProps>(
   ({ uri, initialState, onEvent }, ref) => {
+    // Set viewer context keys
+    const [, setViewerType] = useContextKey<string>('viewerType', 'stub');
+    const [, setViewerUri] = useContextKey<string>('viewerUri', '');
+
     useEffect(() => {
+      // Update context keys
+      setViewerType('stub');
+      setViewerUri(uri);
+
       // Emit ready event on mount
       onEvent({ type: 'ready', uri });
-    }, [uri, onEvent]);
+    }, [uri, onEvent, setViewerType, setViewerUri]);
 
     useImperativeHandle(ref, () => ({
       focus: () => {

@@ -194,6 +194,7 @@ export interface CommandContext {
   thread?: ThreadViewModel;
   activeGroup?: GroupId;
   activeTab?: DocTab;
+  activeTabIndex?: number;
   editorAreaOps?: EditorAreaOperations;
 }
 
@@ -202,6 +203,24 @@ export interface Command {
   handler: (ctx: CommandContext) => void | Promise<void>;
   when?: (ctx: CommandContext) => boolean;
   keybinding?: string;
+}
+
+// Keybinding and Context types (for services)
+export type ContextKeyValue = string | number | boolean | undefined;
+export type ContextKeyMap = Record<string, ContextKeyValue>;
+
+export interface Keybinding {
+  id: string;
+  commandId: string;
+  key: string;
+  mac?: string;
+  win?: string;
+  linux?: string;
+  when?: string;
+}
+
+export interface Disposable {
+  dispose(): void;
 }
 
 // Editor layout and state types

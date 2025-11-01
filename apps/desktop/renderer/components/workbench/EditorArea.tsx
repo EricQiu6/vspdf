@@ -1,9 +1,11 @@
-import { useReducer } from 'react';
+import { useReducer, useEffect, useMemo } from 'react';
 import type { EditorAreaState } from '@vspdf/types';
 import { editorAreaReducer, createInitialEditorState } from '../../services/EditorAreaReducer';
 import { EditorAreaStateContext, EditorAreaDispatchContext } from './EditorAreaContext';
 import { LayoutRenderer } from './LayoutRenderer';
 import { EditorAreaTestControls } from './EditorAreaTestControls';
+import { createEditorAreaOperations } from '../../services/EditorAreaOperationsFactory';
+import { commandContextProvider } from '../../services/CommandContextProvider';
 import styles from './EditorArea.module.css';
 
 interface EditorAreaProps {
@@ -42,6 +44,27 @@ export function EditorArea({ initialState }: EditorAreaProps) {
     initialState,
     (provided) => provided ?? createInitialEditorState()
   );
+
+  // Create operations API from dispatch (memoized)
+  const editorAreaOps = useMemo(() => createEditorAreaOperations(dispatch), [dispatch]);
+
+  // Update command context whenever state changes
+  useEffect(() => {
+    const activeGroup = state.activeGroupId;
+    const activeGroupState = activeGroup ? state.groups[activeGroup] : undefined;
+    const activeTabIndex = activeGroupState?.activeIndex ?? -1;
+    const activeTab =
+      activeGroupState && activeTabIndex >= 0
+        ? activeGroupState.tabs[activeTabIndex]
+        : undefined;
+
+    commandContextProvider.updateContext({
+      activeGroup,
+      activeTab,
+      activeTabIndex: activeTabIndex >= 0 ? activeTabIndex : undefined,
+      editorAreaOps,
+    });
+  }, [state, editorAreaOps]);
 
   return (
     <EditorAreaStateContext.Provider value={state}>

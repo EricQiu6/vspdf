@@ -1,0 +1,224 @@
+/**
+ * Command Palette Styles
+ *
+ * VS Code-inspired styling for the command palette.
+ */
+
+/* Overlay that covers the entire screen */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  z-index: 10000;
+  animation: fadeIn 0.1s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Command palette container */
+.palette {
+  width: 600px;
+  max-width: 90vw;
+  max-height: 60vh;
+  background-color: var(--bg-primary, #252526);
+  border: 1px solid var(--border-color, #454545);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Search input */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-secondary, #3c3c3c);
+  color: var(--text-primary, #cccccc);
+  border: none;
+  border-bottom: 1px solid var(--border-color, #454545);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--text-secondary, #858585);
+}
+
+.input:focus {
+  background-color: var(--bg-tertiary, #2d2d2d);
+}
+
+/* Command list container */
+.list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Scrollbar styling */
+.list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: var(--bg-primary, #252526);
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, #424242);
+  border-radius: 5px;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #4f4f4f);
+}
+
+/* No results message */
+.noResults {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary, #858585);
+  font-size: 13px;
+}
+
+/* Command item */
+.commandItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.05s ease;
+}
+
+.commandItem:hover {
+  background-color: var(--item-hover, #2a2d2e);
+}
+
+.commandItem.selected {
+  background-color: var(--item-selected, #094771);
+}
+
+.commandItem.selected:hover {
+  background-color: var(--item-selected-hover, #0d5a8a);
+}
+
+/* Command info (left side) */
+.commandInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Command title */
+.commandTitle {
+  font-size: 13px;
+  color: var(--text-primary, #cccccc);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commandItem.selected .commandTitle {
+  color: var(--text-selected, #ffffff);
+}
+
+/* Highlighted characters in search results */
+.highlight {
+  color: var(--highlight-color, #4ec9b0);
+  font-weight: 600;
+}
+
+.commandItem.selected .highlight {
+  color: var(--highlight-selected, #a8e6cf);
+}
+
+/* Command category */
+.commandCategory {
+  font-size: 11px;
+  color: var(--text-tertiary, #6a6a6a);
+  text-transform: lowercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commandItem.selected .commandCategory {
+  color: var(--text-secondary, #d4d4d4);
+}
+
+/* Command keybinding (right side) */
+.commandKeybinding {
+  font-size: 11px;
+  color: var(--text-secondary, #858585);
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Courier New', monospace;
+  padding: 2px 6px;
+  background-color: var(--keybinding-bg, #3c3c3c);
+  border: 1px solid var(--keybinding-border, #555555);
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.commandItem.selected .commandKeybinding {
+  color: var(--text-primary, #ffffff);
+  background-color: var(--keybinding-selected-bg, #0d5a8a);
+  border-color: var(--keybinding-selected-border, #0d6ebd);
+}
+
+/* Dark theme variables (default) */
+:root {
+  --bg-primary: #252526;
+  --bg-secondary: #3c3c3c;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #cccccc;
+  --text-secondary: #858585;
+  --text-tertiary: #6a6a6a;
+  --text-selected: #ffffff;
+  --border-color: #454545;
+  --item-hover: #2a2d2e;
+  --item-selected: #094771;
+  --item-selected-hover: #0d5a8a;
+  --highlight-color: #4ec9b0;
+  --highlight-selected: #a8e6cf;
+  --keybinding-bg: #3c3c3c;
+  --keybinding-border: #555555;
+  --keybinding-selected-bg: #0d5a8a;
+  --keybinding-selected-border: #0d6ebd;
+  --scrollbar-thumb: #424242;
+  --scrollbar-thumb-hover: #4f4f4f;
+}

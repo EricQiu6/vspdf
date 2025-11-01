@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFile, writeFile, readdir, stat } from 'fs/promises';
 import { validatePath, validateWritePath, SecurityError } from './security';
+import { setupApplicationMenu } from './menu';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -105,7 +106,11 @@ ipcMain.handle('fs.stat', async (_, filePath: string) => {
 });
 
 // App lifecycle
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Setup custom application menu (removes Cmd+W and other conflicting shortcuts)
+  setupApplicationMenu();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

@@ -3,6 +3,12 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { viewerRegistry } from '../../services/ViewerRegistry';
 import { StubViewer } from '../../viewers/StubViewer';
 import { EditorArea } from './EditorArea';
+import { GlobalKeyboardListener } from './GlobalKeyboardListener';
+import { CommandPalette } from '../CommandPalette/CommandPalette';
+import { useCommandPalette } from '../../hooks/useCommandPalette';
+import { registerDefaultKeybindings } from '../../services/keybindings/defaultKeybindings';
+import { initializeDefaultContextKeys } from '../../services/context/defaultContextKeys';
+import { registerEditorCommands } from '../../services/commands/editorCommands';
 import { editorAreaReducer, createInitialEditorState } from '../../services/EditorAreaReducer';
 import type { EditorAreaState } from '@vspdf/types';
 import styles from './Workbench.module.css';
@@ -13,6 +19,15 @@ import styles from './Workbench.module.css';
 
 // Register viewers at module load - runs exactly once, before any component mounts
 viewerRegistry.register('stub', StubViewer);
+
+// Register commands at module load - must happen before CommandPalette renders
+registerEditorCommands();
+
+// Initialize context keys at module load
+initializeDefaultContextKeys();
+
+// Register default keybindings at module load
+registerDefaultKeybindings();
 
 // ============================================================================
 // Test State Factory
@@ -122,8 +137,12 @@ function createTwoGroupTestState(): EditorAreaState {
  * Future: will contain Sidebar, PanelContainer, StatusBar
  */
 export function Workbench() {
+  const { visible, hide } = useCommandPalette();
+
   return (
     <div className={styles.workbench}>
+      <GlobalKeyboardListener />
+      <CommandPalette visible={visible} onClose={hide} />
       <ErrorBoundary
         fallback={
           <div style={{ padding: '2rem', color: '#f48771' }}>

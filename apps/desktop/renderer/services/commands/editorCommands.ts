@@ -127,15 +127,18 @@ export const focusPreviousGroupCommand: Command = {
 export const closeActiveEditorCommand: Command = {
   id: 'workbench.action.closeActiveEditor',
   handler: (ctx) => {
-    if (!ctx.editorAreaOps || !ctx.activeGroup || !ctx.activeTab) {
+    if (!ctx.editorAreaOps || !ctx.activeGroup) {
       console.warn('closeActiveEditorCommand: Missing required context');
       return;
     }
 
-    // To close the active tab, we need its index
-    // This would typically be stored in CommandContext
-    // For now, this demonstrates the pattern
-    console.log('closeActiveEditorCommand: Needs tab index in context');
+    // Close the active tab using the closeTab operation
+    // The activeTabIndex should be provided in the context
+    if (ctx.activeTabIndex !== undefined) {
+      ctx.editorAreaOps.closeTab(ctx.activeGroup, ctx.activeTabIndex);
+    } else {
+      console.warn('closeActiveEditorCommand: No active tab index in context');
+    }
   },
   when: (ctx) => !!ctx.activeTab,
   keybinding: 'Cmd+W',

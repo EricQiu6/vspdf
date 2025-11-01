@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { EditorGroupState, ViewerEvent } from '@vspdf/types';
 import { TabBar } from './TabBar';
 import { ViewerContainer } from './ViewerContainer';
 import { eventBus } from '../../services/EventBus';
+import { useContextKey } from '../../hooks/useContextKey';
 import styles from './EditorGroup.module.css';
 
 interface EditorGroupProps {
@@ -28,6 +29,47 @@ export function EditorGroup({
   onGroupClick,
 }: EditorGroupProps) {
   const { tabs, activeIndex } = groupState;
+  const groupRef = useRef<HTMLDivElement>(null);
+
+  // Context keys for conditional keybindings (scoped to this group's element)
+  const [, setEditorFocus] = useContextKey<boolean>('editorFocus', false, groupRef);
+  const [, setActiveGroup] = useContextKey<string>('activeGroupId', '', groupRef);
+
+  // Update context keys when active state changes
+  useEffect(() => {
+    if (isActive) {
+      setEditorFocus(true);
+      setActiveGroup(groupState.id);
+    } else {
+      setEditorFocus(false);
+    }
+  }, [isActive, groupState.id, setEditorFocus, setActiveGroup]);
+
+  // Track focus/blur for context keys
+  useEffect(() => {
+    const element = groupRef.current;
+    if (!element) return;
+
+    const handleFocusIn = () => {
+      setEditorFocus(true);
+      setActiveGroup(groupState.id);
+    };
+
+    const handleFocusOut = (e: FocusEvent) => {
+      // Only clear if focus is leaving the group entirely
+      if (!element.contains(e.relatedTarget as Node)) {
+        setEditorFocus(false);
+      }
+    };
+
+    element.addEventListener('focusin', handleFocusIn);
+    element.addEventListener('focusout', handleFocusOut);
+
+    return () => {
+      element.removeEventListener('focusin', handleFocusIn);
+      element.removeEventListener('focusout', handleFocusOut);
+    };
+  }, [groupState.id, setEditorFocus, setActiveGroup]);
 
   const handleViewerEvent = (event: ViewerEvent) => {
     // Propagate viewer events to EventBus for other components to consume
@@ -57,10 +99,12 @@ export function EditorGroup({
 
   return (
     <div
+      ref={groupRef}
       className={`${styles.editorGroup} ${isActive ? styles.active : ''}`}
       onClick={onGroupClick}
       data-ui-role="editorGroup"
       data-group-id={groupState.id}
+      tabIndex={-1}
     >
       <TabBar
         groupId={groupState.id}
