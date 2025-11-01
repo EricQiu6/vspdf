@@ -14,7 +14,6 @@ import { commandRegistry } from '../services/CommandRegistry.js';
  *
  * @param keys Key sequence (e.g., "Cmd+K" or "Cmd+K Cmd+P")
  * @param callback Function to call when shortcut is triggered
- * @param deps Dependency array (like useEffect)
  *
  * @example
  * ```typescript
@@ -26,15 +25,15 @@ import { commandRegistry } from '../services/CommandRegistry.js';
  *   console.log('Multi-chord!');
  * });
  * ```
+ *
+ * @note The callback is kept fresh via useLayoutEffect and a ref,
+ * so it always captures the latest closure values without needing
+ * to re-register the keybinding.
  */
-export function useHotkeys(
-  keys: string,
-  callback: () => void,
-  deps: DependencyList = []
-): void {
+export function useHotkeys(keys: string, callback: () => void): void {
   const callbackRef = useRef(callback);
 
-  // Update ref on every render (don't re-register)
+  // Update ref on every render to capture latest closure
   useLayoutEffect(() => {
     callbackRef.current = callback;
   });
@@ -44,7 +43,7 @@ export function useHotkeys(
     const id = `hotkey-${crypto.randomUUID()}`;
     const commandId = `__hotkey.${id}`;
 
-    // Register temporary command
+    // Register temporary command that always calls the latest callback via ref
     commandRegistry.register({
       id: commandId,
       handler: () => callbackRef.current(),
@@ -61,8 +60,7 @@ export function useHotkeys(
       disposable.dispose();
       commandRegistry.unregister(commandId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keys, ...deps]);
+  }, [keys]);
 }
 
 /**
