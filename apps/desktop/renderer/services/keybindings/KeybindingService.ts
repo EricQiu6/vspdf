@@ -67,16 +67,24 @@ export class KeybindingService implements IKeybindingService {
 
     // Handle result
     if (result.type === 'Found') {
-      event.preventDefault();
-      event.stopPropagation();
-
-      // Execute command with proper context
+      // Get command context first
       const commandContext = commandContextProvider.getContext();
-      commandRegistry.execute(result.commandId, commandContext).catch((error) => {
-        console.error(`Failed to execute command ${result.commandId}:`, error);
-      });
 
-      this.resetChords();
+      // Check if command can execute BEFORE consuming the event
+      if (commandRegistry.canExecute(result.commandId, commandContext)) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Execute command
+        commandRegistry.execute(result.commandId, commandContext).catch((error) => {
+          console.error(`Failed to execute command ${result.commandId}:`, error);
+        });
+
+        this.resetChords();
+      } else {
+        // Command can't execute - don't consume the event
+        this.resetChords();
+      }
     } else if (result.type === 'MoreChordsNeeded') {
       event.preventDefault();
       event.stopPropagation();
